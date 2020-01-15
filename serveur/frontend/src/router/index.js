@@ -2,8 +2,45 @@ import Vue from 'vue'
 import Router from 'vue-router'
 
 const routerOptions = [
-    { path: '/', component: 'HelloWorld', name: 'home', children: [] },
-    { path: '*', component: 'NotFound', children: [] }
+    {
+        path: '/',
+        component: 'Home',
+        name: 'home',
+        children: [],
+        meta: {
+            auth: undefined
+        }
+    },
+    {
+        path: '/register',
+        name: 'register',
+        component: 'Register',
+        meta: {
+            auth: false
+        }
+    },
+    {
+        path: '/login',
+        name: 'login',
+        component: 'Login',
+        meta: {
+            auth: false
+        }
+    },
+    // USER ROUTES
+    {
+        path: '/dashboard',
+        name: 'dashboard',
+        component: 'Dashboard',
+        meta: {
+            auth: true
+        }
+    },
+    {
+        path: '*',
+        component: 'NotFound',
+        children: []
+    }
 ]
 
 const routes = routerOptions.map(route => {
