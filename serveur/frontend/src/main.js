@@ -13,9 +13,7 @@ Vue.router = router
 
 // Set Vue authentication
 Vue.use(VueAxios, axios)
-axios.create({
-  baseURL: process.env.BACKEND_URL ? process.env.BACKEND_URL : 'http://localhost/todos',
-})
+axios.defaults.baseURL = `http://localhost/api`
 Vue.use(VueAuth, auth)
 
 // Vue.prototype.$http = http

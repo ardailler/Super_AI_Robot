@@ -5,6 +5,6 @@ const routes = require('./Routes')
 const user = require('./user')
 
 router.use('/', routes)
-    .use('/users', user)
+    .use('/auth', user)
 
 module.exports = router

@@ -5,7 +5,7 @@ const auth = require('../middleware/auth')
 const router = express.Router()
 
 
-router.post('/', async (req, res) => {
+router.post('/register', async (req, res) => {
     // Create a new user
     try {
         const user = new User(req.body)
@@ -26,6 +26,8 @@ router.post('/login', async(req, res) => {
             return res.status(401).send({error: 'Login failed! Check authentication credentials'})
         }
         const token = await user.generateAuthToken()
+        console.log('token :', token)
+        res.set('Authorization', token)
         res.send({ user, token })
     } catch (error) {
         res.status(400).send(error)
@@ -33,12 +35,12 @@ router.post('/login', async(req, res) => {
 
 })
 
-router.get('/me', auth, async(req, res) => {
+router.get('/user', auth, async(req, res) => {
     // View logged in user profile
     res.send(req.user)
 })
 
-router.post('/me/logout', auth, async (req, res) => {
+router.post('/logout', auth, async (req, res) => {
     // Log user out of the application
     try {
         req.user.tokens = req.user.tokens.filter((token) => {
@@ -51,7 +53,7 @@ router.post('/me/logout', auth, async (req, res) => {
     }
 })
 
-router.post('/me/logoutall', auth, async(req, res) => {
+router.post('/logoutall', auth, async(req, res) => {
     // Log user out of all devices
     try {
         req.user.tokens.splice(0, req.user.tokens.length)

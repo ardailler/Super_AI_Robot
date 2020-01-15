@@ -40,20 +40,21 @@
         methods: {
             login() {
                 // get the redirect object
-                var redirect = this.$auth.redirect()
+                // var redirect = this.$auth.redirect()
                 var app = this
-                this.$auth.login({
-                    params: {
+                app.$auth.login({
+                    data: {
                         email: app.email,
                         password: app.password
                     },
-                    success: function() {
+                    success: function(response) {
                         // handle redirection
-                        const redirectTo = redirect ? redirect.from.name : this.$auth.user().role === 2 ? 'admin.dashboard' : 'dashboard'
-
-                        this.$router.push({name: redirectTo})
+                        // const redirectTo = redirect ? redirect.from.name : app.$auth.user().role === 2 ? 'admin.dashboard' : 'dashboard'
+                        console.log('-------------', response.data.token)
+                        // app.$router.push({name: 'dashboard'})
                     },
                     error: function() {
+                        console.log('+++++++++++++++')
                         app.has_error = true
                     },
                     rememberMe: true,

@@ -1,26 +1,27 @@
-import bearer from '@websanova/vue-auth/drivers/auth/bearer'
+// import bearer from '@websanova/vue-auth/drivers/auth/basic'
+import bearertest from './test/test'
 import axios from '@websanova/vue-auth/drivers/http/axios.1.x'
 import router from '@websanova/vue-auth/drivers/router/vue-router.2.x'
 
 // Auth base configuration some of this options
 // can be override in method calls
 const config = {
-    auth: bearer,
+    auth: bearertest,
     http: axios,
     router: router,
-    tokenDefaultName: 'laravel-vue-spa',
+    tokenDefaultName: 'token',
     tokenStore: ['localStorage'],
     rolesVar: 'role',
     registerData: {
         url: 'auth/register',
-        method: 'POS',
+        method: 'POST',
         redirect: '/login'
     },
     loginData: {
         url: 'auth/login',
         method: 'POST',
         redirect: '',
-        fetchUser: true
+        fetchUser: false
     },
     logoutData: {
         url: 'auth/logout',
@@ -35,7 +36,7 @@ const config = {
     },
     refreshData: {url: 'auth/refresh',
         method: 'GET',
-        enabled: true,
+        enabled: false,
         interval: 30
     }
 }
