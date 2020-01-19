@@ -8,15 +8,19 @@ import auth from './auth'
 import router from './router'
 import store from './store'
 
-
+// Set Vue globally
+window.Vue = Vue
+window.axios = require('axios')
 Vue.router = router
 
 // Set Vue authentication
 Vue.use(VueAxios, axios)
-axios.defaults.baseURL = `http://localhost/api`
+const location = document.location // localhost || @Ip
+axios.defaults.baseURL = `http://${location.hostname}/api`
 Vue.use(VueAuth, auth)
 
 // Vue.prototype.$http = http
+Vue.prototype.$axios = axios
 
 Vue.config.productionTip = false
 

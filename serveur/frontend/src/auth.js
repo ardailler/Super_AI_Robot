@@ -8,9 +8,12 @@ const config = {
     auth: bearer,
     http: axios,
     router: router,
-    tokenDefaultName: 'token',
+    tokenDefaultName: 'token_spa',
     tokenStore: ['localStorage'],
     rolesVar: 'role',
+    parseUserData: function (data) {
+      return data
+    },
     registerData: {
         url: 'auth/register',
         method: 'POST',

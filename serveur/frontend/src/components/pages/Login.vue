@@ -1,14 +1,14 @@
 <template>
-    <div :class="['sign-page', isClose]">
+    <div :class="['sign-pages', isClose]">
         <div class="top">
-            <transition name="router-anim" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
+            <transition name="app-name-login-anim" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
                 <p class="subtitle_1" v-if="close">SUPER IA ROBOT</p>
             </transition>
         </div>
         <div class="center">
-            <transition-group name="router-anim" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
+            <transition mode="out-in" name="forms-login-anim" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
                 <!--SignIn-->
-                <form autocomplete="off" key="'SignIn'" @submit.prevent="login" method="post" v-if="close">
+                <form autocomplete="off" key="'SignIn'" @submit.prevent="login" method="post" v-if="close && signin">
                     <div class="alert alert-danger" v-if="has_error">
                         <p class="body_2">Erreur, impossible de se connecter avec ces identifiants.</p>
                     </div>
@@ -23,9 +23,9 @@
                     <button type="submit" class="btn btn-default">Connexion</button>
                 </form>
                 <!--SignUp-->
-                <form autocomplete="off" key="'SignUp'" @submit.prevent="register" method="post">
+                <form autocomplete="off" key="'SignUp'" @submit.prevent="register" method="post" v-if="close && !signin">
                     <div class="alert alert-danger" v-if="has_error_signup">
-                        <p v-if="error == 'registration_validation_error'" class="body_2">Erreur(s) de validation, veuillez consulter le(s) message(s) ci-dessous.</p>
+                        <p v-if="error === 'registration_validation_error'" class="body_2">Erreur(s) de validation, veuillez consulter le(s) message(s) ci-dessous.</p>
                         <p v-else class="body_2">Erreur, impossible de s'inscrire pour le moment. Si le problème persiste, veuillez contacter un administrateur.</p>
                     </div>
 
@@ -46,11 +46,11 @@
 
                     <button type="submit" class="btn btn-default">Inscription</button>
                 </form>
-            </transition-group>
+            </transition>
         </div>
         <div class="bottom">
-            <transition name="router-anim" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-                <p class="subtitle_1" v-if="close" @click.prevent.stop="clickSignUp">SIGNUP</p>
+            <transition name="sign-button-login-anim" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
+                <p class="subtitle_1" v-if="close" @click.prevent.stop="switchSignin">{{ signText }}</p>
             </transition>
         </div>
     </div>
@@ -72,7 +72,7 @@
                 has_error_signup: false,
                 error: '',
                 errors: {},
-                signin: false
+                signin: true
             }
         },
         mounted() {
@@ -84,14 +84,17 @@
         computed: {
           isClose () {
               return this.close ? 'close' : 'open'
+          },
+            signText () {
+              return this.signin ? 'SIGNIN' : 'SIGNUP'
           }
         },
         methods: {
             switchClose () {
                 this.close = !this.close
             },
-            clickSignUp () {
-                this.close = !this.close
+            switchSignin () {
+                this.signin = !this.signin
             },
             login() {
                 // get the redirect object
@@ -138,9 +141,6 @@
                         console.log(res.response.data)
                         app.error = ''
                         app.has_error_signup = true
-                        console.log('-----------')
-                        console.log(res.response.data.error)
-                        console.log(res.response.data.errmsg)
                         if (res.response.data.error) {
                             app.error = res.response.data.error
                         } else if (res.response.data.name) {
@@ -154,15 +154,15 @@
     }
 </script>
 <style scoped>
-    .sign-page {
+    .sign-pages {
         position: relative;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
     }
-    .sign-page > .top,
-    .sign-page > .center,
-    .sign-page > .bottom{
+    .sign-pages > .top,
+    .sign-pages > .center,
+    .sign-pages > .bottom{
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -174,74 +174,75 @@
         transition: 1s ease;
     }
 
-    .sign-page > .top {
+    .sign-pages > .top {
         justify-content: flex-start;
     }
 
-    .sign-page > .bottom {
+    .sign-pages > .bottom {
         justify-content: flex-end;
     }
 
-    .sign-page.open > .top,
-    .sign-page.open > .bottom {
+    .sign-pages.open > .top,
+    .sign-pages.open > .bottom {
         padding: 0px;
         flex: 0;
     }
 
-    .sign-page.close > .top,
-    .sign-page.close > .bottom {
+    .sign-pages.close > .top,
+    .sign-pages.close > .bottom {
         padding: 20px;
         flex: 2;
     }
-    .sign-page.close > .center {
+    .sign-pages.close > .center {
         flex: 0;
     }
-    .sign-page.open > .center {
+    .sign-pages.open > .center {
         flex: 1;
     }
-    .sign-page > .center {
+    .sign-pages > .center {
         justify-content: center;
         padding: 20px;
     }
-    .sign-page > .top {
+    .sign-pages > .top {
         background-color: var(--color-primary);
     }
 
-    .sign-page > .center {
+    .sign-pages > .center {
         background-color: var(--color-light);
     }
 
-    .sign-page > .bottom {
+    .sign-pages > .bottom {
         background-color: var(--color-secondary);
     }
-    .sign-page > .top p {
+    .sign-pages > .top p {
         position: absolute;
         color: var(--color-primary-10);
     }
-    .sign-page > .bottom p {
+    .sign-pages > .bottom p {
         position: absolute;
         color: var(--color-secondary-00);
+        cursor: pointer;
     }
-    .sign-page .center form {
+    .sign-pages .center form {
         position: relative;
     }
-    .sign-page .center .form-group {
+    .sign-pages .center .form-group {
         position: relative;
         display: flex;
         flex-direction: column;
     }
-    .sign-page .center .form-group label,
-    .sign-page .center button {
+    .sign-pages .center .form-group label,
+    .sign-pages .center button {
         margin-top: 5px;
     }
-    .sign-page .center .form-group .form-control {
+    .sign-pages .center .form-group .form-control {
         border: none;
         padding: 2px 0;
         outline: none;
         margin: 5px 0;
         text-align: center;
     }
-    .sign-page .center button {
+    .sign-pages .center button {
         width: 100%;
         border: none;
         background-color: transparent;
@@ -253,7 +254,7 @@
         cursor: pointer;
     }
 
-    .sign-page .center button:hover {
+    .sign-pages .center button:hover {
         background-color: var(--color-tertiary-00);
         color: var(--color-tertiary);
     }

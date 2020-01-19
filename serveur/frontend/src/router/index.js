@@ -12,14 +12,6 @@ const routerOptions = [
         }
     },
     {
-        path: '/register',
-        name: 'register',
-        component: 'Register',
-        meta: {
-            auth: false
-        }
-    },
-    {
         path: '/login',
         name: 'login',
         component: 'Login',
@@ -50,7 +42,7 @@ const routes = routerOptions.map(route => {
 function getRouteRec (route) {
     let result = {
         ...route,
-        component: () => import(`@/components/page/${route.component}.vue`)
+        component: () => import(`@/components/pages/${route.component}.vue`)
     }
 
     if (route.hasOwnProperty('children')) {
