@@ -6,6 +6,9 @@
 
 <script>
 
+import '@/assets/css/animate.css'
+import '@/assets/css/main.css'
+
 export default {
   name: "app",
   components: {
@@ -15,6 +18,9 @@ export default {
 
 <style scoped>
   .container {
-    background-color: red;
+      position: relative;
+      display: block;
+      width: 100%;
+      min-height: 100%;
   }
 </style>

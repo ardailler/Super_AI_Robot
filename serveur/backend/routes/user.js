@@ -28,8 +28,7 @@ router.post('/login', async(req, res) => {
         }
         const token = await data.generateAuthToken()
         res.set('Authorization', token)
-        res.header('ETag', '12345')
-            .send({ "status": "success", data, token })
+        res.send({ "status": "success", data, token })
     } catch (error) {
         res.status(400).send(error)
     }
@@ -38,7 +37,6 @@ router.post('/login', async(req, res) => {
 
 router.get('/user', auth, async(req, res) => {
     // View logged in user profile
-    res.set('Authorization', req.user.token)
     res.send(req.user)
 })
 

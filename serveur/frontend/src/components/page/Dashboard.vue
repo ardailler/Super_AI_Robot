@@ -6,6 +6,9 @@
             <div class="card-body">
                 Bienvenue
             </div>
+            <div class="card-body" @click.prevent.stop="logout">
+                logout
+            </div>
         </div>
     </div>
 </template>
@@ -20,6 +23,11 @@
         },
         components: {
             //
+        },
+        methods: {
+            logout () {
+              this.$auth.logout()
+            }
         }
     }
 </script>
