@@ -32,11 +32,9 @@
                 has_error: false
             }
         },
-
         mounted() {
             //
         },
-
         methods: {
             login() {
                 // get the redirect object
@@ -50,11 +48,9 @@
                     success: function(response) {
                         // handle redirection
                         // const redirectTo = redirect ? redirect.from.name : app.$auth.user().role === 2 ? 'admin.dashboard' : 'dashboard'
-                        console.log('-------------', response.data.token)
-                        // app.$router.push({name: 'dashboard'})
+                        app.$router.push({name: 'dashboard'})
                     },
                     error: function() {
-                        console.log('+++++++++++++++')
                         app.has_error = true
                     },
                     rememberMe: true,

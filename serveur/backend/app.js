@@ -21,6 +21,15 @@ mongoose.connect(config.DB, {
   useUnifiedTopology: true,
 });
 
+app.all("/api/*", function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Expose-Headers', 'Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+
+  return next();
+})
+
 app.use(cors());  //enable cors
 
 app.use(logger('dev'));

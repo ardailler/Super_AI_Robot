@@ -11,6 +11,7 @@ router.post('/register', async (req, res) => {
         const user = new User(req.body)
         await user.save()
         const token = await user.generateAuthToken()
+        res.set('Authorization', token)
         res.status(201).send({ user, token })
     } catch (error) {
         res.status(400).send(error)
@@ -21,14 +22,14 @@ router.post('/login', async(req, res) => {
     //Login a registered user
     try {
         const { email, password } = req.body
-        const user = await User.findByCredentials(email, password)
-        if (!user) {
+        const data = await User.findByCredentials(email, password)
+        if (!data) {
             return res.status(401).send({error: 'Login failed! Check authentication credentials'})
         }
-        const token = await user.generateAuthToken()
-        console.log('token :', token)
+        const token = await data.generateAuthToken()
         res.set('Authorization', token)
-        res.send({ user, token })
+        res.header('ETag', '12345')
+            .send({ "status": "success", data, token })
     } catch (error) {
         res.status(400).send(error)
     }
@@ -37,6 +38,7 @@ router.post('/login', async(req, res) => {
 
 router.get('/user', auth, async(req, res) => {
     // View logged in user profile
+    res.set('Authorization', req.user.token)
     res.send(req.user)
 })
 
