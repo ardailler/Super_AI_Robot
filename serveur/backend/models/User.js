@@ -28,11 +28,12 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: true,
-    minLength: 7
-  },
-  token: {
-    type: String,
-    required: true
+    minLength: 7,
+    validate: value => {
+      if (value.length < 7) {
+        throw new Error('Password too short (min 7 char)')
+      }
+    }
   },
   tokens: [{
     token: {
@@ -58,7 +59,6 @@ userSchema.methods.generateAuthToken = async function() {
   // Generate an auth token for the user
   const user = this
   const token = jwt.sign({_id: user._id}, process.env.JWT_KEY)
-  user.token = token
   user.tokens = user.tokens.concat({token})
   await user.save()
   return token

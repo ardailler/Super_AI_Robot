@@ -6,8 +6,9 @@
             </transition>
         </div>
         <div class="center">
-            <transition name="router-anim" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-                <form autocomplete="off" @submit.prevent="login" method="post" v-if="close">
+            <transition-group name="router-anim" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
+                <!--SignIn-->
+                <form autocomplete="off" key="'SignIn'" @submit.prevent="login" method="post" v-if="close">
                     <div class="alert alert-danger" v-if="has_error">
                         <p class="body_2">Erreur, impossible de se connecter avec ces identifiants.</p>
                     </div>
@@ -21,35 +22,37 @@
                     </div>
                     <button type="submit" class="btn btn-default">Connexion</button>
                 </form>
-            </transition>
+                <!--SignUp-->
+                <form autocomplete="off" key="'SignUp'" @submit.prevent="register" method="post">
+                    <div class="alert alert-danger" v-if="has_error_signup">
+                        <p v-if="error == 'registration_validation_error'" class="body_2">Erreur(s) de validation, veuillez consulter le(s) message(s) ci-dessous.</p>
+                        <p v-else class="body_2">Erreur, impossible de s'inscrire pour le moment. Si le problème persiste, veuillez contacter un administrateur.</p>
+                    </div>
+
+                    <div class="form-group" v-bind:class="{ 'has-error': has_error_signup && errors.name }">
+                        <input type="text" id="name_signup" class="form-control body_2" placeholder="NOM" v-model="name">
+                        <span class="help-block body_2" v-if="has_error_signup && errors.name">{{ errors.name.message }}</span>
+                    </div>
+
+                    <div class="form-group" v-bind:class="{ 'has-error': has_error_signup && errors.email }">
+                        <input type="email" id="email_signup" class="form-control body_2" placeholder="E-MAIL" v-model="email_signup">
+                        <span class="help-block body_2" v-if="has_error_signup && errors.email">{{ errors.email.message }}</span>
+                    </div>
+
+                    <div class="form-group" v-bind:class="{ 'has-error': has_error_signup && errors.password }">
+                        <input type="password" id="password_signup" class="form-control body_2" placeholder="MOT DE PASSE" v-model="password_signup">
+                        <span class="help-block body_2" v-if="has_error_signup && errors.password">{{ errors.password.message }}</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-default">Inscription</button>
+                </form>
+            </transition-group>
         </div>
         <div class="bottom">
             <transition name="router-anim" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
                 <p class="subtitle_1" v-if="close" @click.prevent.stop="clickSignUp">SIGNUP</p>
             </transition>
         </div>
-
-
-        <!--<div class="card card-default">
-            <div class="card-header">Connexion</div>
-
-            <div class="card-body">
-                <div class="alert alert-danger" v-if="has_error">
-                    <p>Erreur, impossible de se connecter avec ces identifiants.</p>
-                </div>
-                <form autocomplete="off" @submit.prevent="login" method="post">
-                    <div class="form-group">
-                        <label for="email">E-mail</label>
-                        <input type="email" id="email" class="form-control" placeholder="user@example.com" v-model="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Mot de passe</label>
-                        <input type="password" id="password" class="form-control" v-model="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-default">Connexion</button>
-                </form>
-            </div>
-        </div>-->
     </div>
 </template>
 
@@ -60,7 +63,16 @@
                 email: null,
                 password: null,
                 has_error: false,
-                close: false
+                close: false,
+
+
+                name: '',
+                email_signup: '',
+                password_signup: '',
+                has_error_signup: false,
+                error: '',
+                errors: {},
+                signin: false
             }
         },
         mounted() {
@@ -84,7 +96,7 @@
             login() {
                 // get the redirect object
                 // var redirect = this.$auth.redirect()
-                var app = this
+                let app = this
                 app.$auth.login({
                     data: {
                         email: app.email,
@@ -103,6 +115,39 @@
                     },
                     rememberMe: true,
                     fetchUser: true
+                })
+            },
+            register() {
+                let app = this
+                this.$auth.register({
+                    data: {
+                        name: app.name,
+                        email: app.email_signup,
+                        password: app.password_signup
+                    },
+                    success: function () {
+                        app.success_signup = true
+                        app.email = app.email_signup
+                        app.password = app.password_signup
+                        app.login()
+                        setTimeout(function () {
+                            app.$router.push({name: 'dashboard'})
+                        }, 1000)
+                    },
+                    error: function (res) {
+                        console.log(res.response.data)
+                        app.error = ''
+                        app.has_error_signup = true
+                        console.log('-----------')
+                        console.log(res.response.data.error)
+                        console.log(res.response.data.errmsg)
+                        if (res.response.data.error) {
+                            app.error = res.response.data.error
+                        } else if (res.response.data.name) {
+                            app.error = res.response.data.name === 'ValidationError' ? 'registration_validation_error' : res.response.data.name
+                        }
+                        app.errors = res.response.data.errors || {}
+                    }
                 })
             }
         }
@@ -148,8 +193,13 @@
         padding: 20px;
         flex: 2;
     }
-    .sign-page > .center {
+    .sign-page.close > .center {
+        flex: 0;
+    }
+    .sign-page.open > .center {
         flex: 1;
+    }
+    .sign-page > .center {
         justify-content: center;
         padding: 20px;
     }
@@ -173,7 +223,7 @@
         color: var(--color-secondary-00);
     }
     .sign-page .center form {
-        position: absolute;
+        position: relative;
     }
     .sign-page .center .form-group {
         position: relative;
@@ -214,6 +264,21 @@
         -webkit-border-radius: 5px;
         -moz-border-radius: 5px;
         border-radius: 5px;
+        margin-bottom: 10px;
     }
-
+    .form-group.has-error {
+        background-color: var(--color-alert2);
+        color: var(--color-secondary-10);
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    .form-group.has-error > * {
+        background-color: var(--color-alert2);
+        color: var(--color-secondary-10);
+    }
+    .help-block {
+        text-align: center;
+    }
 </style>
