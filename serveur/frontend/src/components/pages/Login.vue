@@ -133,9 +133,9 @@
                         app.email = app.email_signup
                         app.password = app.password_signup
                         app.login()
-                        setTimeout(function () {
+                        /* setTimeout(function () {
                             app.$router.push({name: 'dashboard'})
-                        }, 1000)
+                        }, 1000) */
                     },
                     error: function (res) {
                         console.log(res.response.data)

@@ -10,9 +10,9 @@ router.post('/register', async (req, res) => {
     try {
         const data = new User(req.body)
         await data.save()
-        const token = await data.generateAuthToken()
-        res.set('Authorization', token)
-        res.status(201).send({ data, token })
+        /* const token = await data.generateAuthToken()
+        res.set('Authorization', token) */
+        res.status(201).send({ "status": "success", data })
     } catch (errors) {
         if (errors.code && errors.code === 11000) {
             res.status(400).send({"error": "registration_validation_error", "errors": {'email': {'message': 'This email is already used.'}}})

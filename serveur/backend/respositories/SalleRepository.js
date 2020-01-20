@@ -10,7 +10,7 @@ class SalleRepository {
 
   // create a new salle
   create(name) {
-    const newSalle = { name, done: false };
+    const newSalle = { name };
     const salle = new this.model(newSalle);
     return salle.save();
   }
@@ -31,9 +31,26 @@ class SalleRepository {
   }
 
   //update salle
-  updateById(id, object) {
-    const query = { _id: id };
-    return this.model.findOneAndUpdate(query, { $set: { name: object.name, done: object.done } });
+  async updateById(id, object) {
+    const query = {_id: id};
+    const salle = await this.model.findOne(query)
+    if (object.name !== undefined && object.name && object.name !== '') {
+      salle.name = object.name
+    }
+    if (object.data !== undefined && object.data && object.data !== '') {
+      salle.data = object.data
+    }
+    await salle.save()
+    return salle
+  }
+
+  //add Action salle
+  async addActionById(id, object) {
+    const query = { _id: id }
+    const salle = await this.model.findOne(query)
+    salle.data = salle.data.concat(object.data)
+    await salle.save()
+    return salle
   }
 }
 

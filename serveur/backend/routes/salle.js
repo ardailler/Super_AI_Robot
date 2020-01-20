@@ -30,11 +30,24 @@ router.delete('/:id', auth, (req, res) => {
 })
 
 // update a salle item
-router.put('/:id', auth, (req, res) => {
+router.put('/:id', auth, async (req, res) => {
     const { id } = req.params
-    const salle = { name: req.body.name, done: req.body.done }
+    const salle = { name: req.body.name, data: req.body.data }
     repository.updateById(id, salle)
-        .then(res.status(200).json([]))
+        .then((salle) => {
+            res.status(200).json(salle)
+        })
+        .catch((error) => console.log(error))
+})
+
+// add action in a salle item
+router.post('/:id', auth, async (req, res) => {
+    const { id } = req.params
+    const salle = { data: req.body.data }
+    repository.addActionById(id, salle)
+        .then((salle) => {
+            res.status(200).json(salle)
+        })
         .catch((error) => console.log(error))
 })
 
