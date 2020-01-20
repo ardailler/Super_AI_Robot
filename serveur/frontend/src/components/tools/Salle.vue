@@ -1,21 +1,42 @@
 <template>
-  <div :class="['salle-content', colorClass]">
-    <p class="subtitle_2 title">Salle n°2</p>
-    <p class="body_2 time">2020-01-20T10:31:58</p>
+  <router-link :to="{ name : 'editSalle', params: {id: id} }" alt="editSalle" title="editSalle" :class="['salle-content', colorClass]">
+    <p class="subtitle_2 title">{{name}}</p>
+    <p class="body_2 time">{{timeFormated}}</p>
     <p class="icon-ios-home icon"></p>
-  </div>
+  </router-link>
 </template>
 <script>
 export default {
   name: "Menu",
+  props: {
+    id: {
+      type: String,
+      default: ''
+    },
+    name: {
+      type: String,
+      default: 'name'
+    },
+    time: {
+      type: String,
+      default: 'time'
+    }
+  },
   data() {
     return {
-      colorClass: ''
+      colorClass: '',
+      months: ['Janvier', 'Frevrier', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Decembre']
     }
   },
   mounted () {
       let rand = Math.floor(Math.random() * 7) + 1
       this.colorClass =  'color'+rand
+  },
+  computed: {
+    timeFormated () {
+      let date = new Date(this.time)
+      return date.getDate() + ' ' + this.months[date.getMonth()] + ' ' + date.getFullYear()
+    }
   },
   methods: {
   }
@@ -23,6 +44,7 @@ export default {
 </script>
 <style scoped>
   .salle-content {
+    text-decoration: none;
     position: relative;
     display: flex;
     flex-direction: column;

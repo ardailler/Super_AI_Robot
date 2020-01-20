@@ -29,6 +29,14 @@ const routerOptions = [
         }
     },
     {
+        path: '/Salle/:id',
+        name: 'editSalle',
+        component: 'EditSalle',
+        meta: {
+            auth: true
+        }
+    },
+    {
         path: '*',
         component: 'NotFound',
         children: []

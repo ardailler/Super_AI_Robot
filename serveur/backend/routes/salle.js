@@ -29,6 +29,14 @@ router.delete('/:id', auth, (req, res) => {
     }).catch((error) => console.log(error))
 })
 
+// get a salle item
+router.get('/:id', auth, (req, res) => {
+    const { id } = req.params
+    repository.findById(id).then((salle) => {
+        res.status(200).json(salle)
+    }).catch((error) => console.log(error))
+})
+
 // update a salle item
 router.put('/:id', auth, async (req, res) => {
     const { id } = req.params
