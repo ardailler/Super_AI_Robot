@@ -1,8 +1,8 @@
-//models/Todo.js
+//models/Salle.js
 
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
-const { Schema } = mongoose;
+const { Schema } = mongoose
 
 // Define schema for salle items
 const salleSchema = new Schema({
@@ -12,8 +12,8 @@ const salleSchema = new Schema({
   done: {
     type: Boolean,
   },
-});
+})
 
-const Salle = mongoose.model('Salle', salleSchema);
+const Salle = mongoose.model('Salle', salleSchema)
 
-module.exports = Salle;
+module.exports = Salle

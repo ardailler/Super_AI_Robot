@@ -10,7 +10,7 @@ import store from './store'
 
 // Set Vue globally
 window.Vue = Vue
-window.axios = require('axios')
+window.axios = axios
 Vue.router = router
 
 // Set Vue authentication

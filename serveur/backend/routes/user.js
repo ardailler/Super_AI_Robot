@@ -8,11 +8,11 @@ const router = express.Router()
 router.post('/register', async (req, res) => {
     // Create a new user
     try {
-        const user = new User(req.body)
-        await user.save()
-        const token = await user.generateAuthToken()
+        const data = new User(req.body)
+        await data.save()
+        const token = await data.generateAuthToken()
         res.set('Authorization', token)
-        res.status(201).send({ user, token })
+        res.status(201).send({ data, token })
     } catch (errors) {
         if (errors.code && errors.code === 11000) {
             res.status(400).send({"error": "registration_validation_error", "errors": {'email': {'message': 'This email is already used.'}}})
