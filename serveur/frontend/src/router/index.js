@@ -37,6 +37,14 @@ const routerOptions = [
         }
     },
     {
+        path: '/arnaud',
+        name: 'arnaud',
+        component: 'Arnaud',
+        meta: {
+            auth: null
+        }
+    },
+    {
         path: '*',
         component: 'NotFound',
         children: []
