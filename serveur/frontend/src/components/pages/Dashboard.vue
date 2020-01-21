@@ -10,7 +10,7 @@
                     </div>
                 </div>
             </transition>
-            <transition name="alert-anim" enter-active-class="animated fadeInDown fast" leave-active-class="animated fadeOutUp fast">
+            <transition name="alert-anim" enter-active-class="animated fadeInDown faster" leave-active-class="animated fadeOutUp faster">
                 <div class="alert" v-if="error && show">
                     <p class="subtitle_2">{{error}}</p>
                 </div>
@@ -155,7 +155,6 @@
     .title > .subtitle_2 {
         position: relative;
         display: block;
-        padding: 0 5px;
         background-color: transparent;
         color: var(--color-tertiary-20);
         border: 1px solid var(--color-tertiary-20);
@@ -163,6 +162,7 @@
         -moz-border-radius: 5px;
         border-radius: 5px;
         text-decoration: none;
+        overflow: hidden;
 
         -webkit-transition: 0.25s ease-in;
         -moz-transition: 0.25s ease-in;
@@ -185,8 +185,6 @@
     }
     .title input {
         position: relative;
-        height: 20px;
-        top: .1px;
         padding: 0 5px;
         border: none;
         outline: none;

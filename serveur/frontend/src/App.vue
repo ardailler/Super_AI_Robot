@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-      <transition name="menu-anim" enter-active-class="animated fadeInDown" leave-active-class="animated fadeOutUp">
+      <transition name="menu-anim" enter-active-class="animated fadeInDown faster delay-1s" leave-active-class="animated fadeOutUp faster">
           <Menu v-if="$auth.check()"></Menu>
       </transition>
       <router-view></router-view>
@@ -34,5 +34,18 @@ export default {
         display: block;
         width: 100%;
         min-height: 100%;
+    }
+    /*.menu-anim-enter-to {
+        -webkit-animation-delay: 1s;
+        -moz-animation-delay: 1s;
+        -o-animation-delay: 1s;
+        animation-delay: 1s;
+    }*/
+
+    .menu-anim-leave-to {
+        -webkit-animation-delay: .25s;
+        -moz-animation-delay: .25s;
+        -o-animation-delay: .25s;
+        animation-delay: .25s;
     }
 </style>

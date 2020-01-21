@@ -155,8 +155,9 @@
 </script>
 <style scoped>
     .sign-pages {
-        position: relative;
-        min-height: 100vh;
+        position: absolute;
+        height: 100%;
+        width: 100%;
         display: flex;
         flex-direction: column;
     }
