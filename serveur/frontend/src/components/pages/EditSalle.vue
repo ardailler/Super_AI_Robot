@@ -40,7 +40,7 @@
                 posX: 0,
                 posY: 0,
                 direction: 90,
-                zoom: 1,
+                zoom: 1.5,
                 ratio: 10 // X pixels = 1 Mètres
             }
         },
@@ -165,7 +165,7 @@
 
                             let taille = self.ratioPM(1) // taille du robot en mètres
                             self.context.fillStyle = "rgb(249, 113, 115)"
-                            self.drawRect(x, y, taille/2, taille, 1, self.direction)
+                            self.drawRect(x, y, taille, taille/2, 1, self.direction)
                         }
                     }
                     self.drawRobot ()
@@ -176,7 +176,7 @@
                 let self = this
                 self.context.save()
                 self.context.setTransform(scale,0,0,scale,x,y)
-                self.context.rotate(rotation)
+                self.context.rotate((3.14 / 180) * rotation)
                 self.context.fillRect(-w/2,-h/2,w,h)
                 self.context.restore()
 
