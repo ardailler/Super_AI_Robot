@@ -1,0 +1,26 @@
+{
+  "name": "super_ai_robot_app",
+  "app-name": "app_thibaud",
+  "package-name": "mypkg_thibaud",
+  "project-type": "webview",
+  "icon": "./assets/icon/icon.png",
+  "permission": [
+    "android.permission.INTERNET",
+    "android.permission.WRITE_EXTERNAL_STORAGE",
+    "android.permission.READ_EXTERNAL_STORAGE"
+  ],
+  "dist-path": "./dist",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "dependencies": {
+    "androidjs": "^2.0.0",
+    "johnny-five": "^1.4.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

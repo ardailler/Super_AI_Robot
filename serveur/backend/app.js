@@ -9,6 +9,28 @@ const logger = require('morgan');
 const cors = require('cors')
 require('dotenv').config({path: __dirname + '/.env'})
 
+
+/*const { spawn } = require('child_process')
+const pythonProcess = spawn('python',["./python/test.py"])
+pythonProcess.stdout.on('data', (data) => {
+  let json = JSON.parse(data.toString())
+  console.log(json)
+  console.log(json.test)
+  // Do something with the data returned from python script
+})*/
+/////////////////////////////////
+/*const torch = require("@idn/torchjs");
+
+var test_model_path = "../../ai/dqn.pt";
+
+var script_module = new torch.ScriptModule(test_model_path);
+
+var a = torch.rand(1, 5); // Etat de l'environnement
+
+var c = script_module.forward(a); // C = Action à faire par le robot*/
+/////////////////////////////////////
+
+
 const config = require('./config/Config');
 
 const routes = require('./routes')
