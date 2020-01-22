@@ -1,4 +1,4 @@
-from gym_minigrid.wrappers import *
+from gym_minigrid.wrappers import ActionBonus
 import numpy as np
 import gym
 from gym.spaces import Discrete
@@ -20,17 +20,14 @@ class DistanceToObs(gym.core.ObservationWrapper):
             direction = obs['direction']
             if direction == 0:
                 fwd_pos[0] += 1
-                
             elif direction == 1:
                 fwd_pos[1] += 1
-
             elif direction == 2:
                 fwd_pos[0] -= 1
-
             elif direction == 3:
                 fwd_pos[1] -= 1
 
-            count +=1 
+            count += 1
             fwd_cell = self.grid.get(*fwd_pos)
 
         new_obs.append(count)
@@ -43,4 +40,3 @@ def make_env(env):
     env = ActionBonus(env)
     env = DistanceToObs(env)
     return env
-

@@ -6,29 +6,31 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 import pandas as pd
-from tqdm import tqdm
+# from tqdm import tqdm
 from collections import deque
+from random import sample
 
 from wrapper import make_env
 
 EPISODE_LEARN = 100
+EPISODE_PLAY = 100
 EPS_DECAY = 100
 EPS_START = 1
 EPS_END = 0.01
+
 
 class Memory():
 
     def __init__(self, capacity):
         self.memory = deque(maxlen=capacity)
 
-
     def push(self, state, action, next_state, reward, done):
         self.memory.append((state, action, reward, next_state, done))
-
 
     """
     Return a random sample from self.memory of len = number
     """
+
     def sample(self, number):
         batch = sample(self.memory, number)
 
@@ -40,7 +42,6 @@ class Memory():
                 np.array(reward, dtype=np.float32),
                 np.array(next_state, dtype=np.float32),
                 np.array(done, dtype=np.uint8))
-
 
     @property
     def size(self):
@@ -69,7 +70,7 @@ class DQN():
     """
     Initiale the Gym environnement Cartpole-v1.
     The learning is done by a DQN.
-    Params : 
+    Params :
         - learning_rate
         - hidden_layer
         - gamma
@@ -78,23 +79,22 @@ class DQN():
     """
 
     def __init__(self,
-                learning_rate,
-                hidden_layer,
-                gamma, 
-                batch_size,
-                step_target_update,
-                evaluation=False,
-                record=False):
+                 learning_rate,
+                 hidden_layer,
+                 gamma,
+                 batch_size,
+                 step_target_update,
+                 evaluation=False,
+                 record=False):
         # Gym environnement Cartpole
         self.env = make_env("MiniGrid-FourRooms-v0")
 
         if record:
             self.env = gym.wrappers.Monitor(
                 self.env, 'playground/cartpole/recording/', force=True)
-        
 
         self.evaluation = evaluation
-        # List to save the rewards 
+        # List to save the rewards
         self.plot_reward = []
 
         # Parameters
@@ -110,19 +110,19 @@ class DQN():
 
             # Experience-Replay buffer
             self.memory = Memory(10000)
-        
+
         print(self.env.action_space.n)
 
         # Dense neural network to compute the q-values
         self.model = Dense_NN(in_dim=2,
-                            out_dim=self.env.action_space.n,
-                            hidden_layer=hidden_layer)
+                              out_dim=self.env.action_space.n,
+                              hidden_layer=hidden_layer)
 
         if not evaluation:
             # Dense neural network to compute the q-target
             self.q_target_nn = Dense_NN(in_dim=2,
-                                out_dim=self.env.action_space.n,
-                                hidden_layer=hidden_layer)
+                                        out_dim=self.env.action_space.n,
+                                        hidden_layer=hidden_layer)
 
             # Backpropagation function
             self.__optimizer = torch.optim.Adam(
@@ -137,7 +137,7 @@ class DQN():
             if not evaluation:
                 self.q_target_nn.cuda('cuda')
             self.device = torch.device('cuda')
-        else: 
+        else:
             self.device = torch.device('cpu')
 
     """
@@ -149,15 +149,15 @@ class DQN():
             x = torch.from_numpy(state).float().to(torch.device('cuda'))
             return self.model(x).argmax().item()
 
-
     """
     Compute the probabilty of exploration during the training
     using a e-greedy method with a decay.
     """
+
     def act(self, state, step):
         # Compute the exploration rate
         eps_threshold = EPS_END + (EPS_START - EPS_END) * \
-                    math.exp(-1. * step / EPS_DECAY)
+            math.exp(-1. * step / EPS_DECAY)
 
         # Random choice between exploration or intensification
         if np.random.rand() < eps_threshold:
@@ -180,7 +180,8 @@ class DQN():
             self.q_target_nn.load_state_dict(self.model.state_dict())
 
         # Get a random batch from the memory
-        state, action, next_state, rewards, done = self.memory.sample(self.bath_size)
+        state, action, next_state, rewards, done = self.memory.sample(
+            self.bath_size)
 
         state = torch.from_numpy(state).to(self.device)
         action = torch.from_numpy(action).to(self.device).long().unsqueeze(-1)
@@ -192,13 +193,13 @@ class DQN():
         pred = self.model(state).gather(1, action).squeeze()
 
         with torch.no_grad():
-            # Expected Q values are estimated from actions which gives maximum Q value
-            max_q_target = self.q_target_nn(next_state).max(1).values
+            action_by_qvalue = self.model(
+                next_state).argmax(1).long().unsqueeze(-1)
+            max_q_target = self.qtarget(next_state).gather(
+                1, action_by_qvalue).squeeze()
 
-            # Apply Bellman equation
             y = rewards + (1. - done) * self.gamma * max_q_target
 
-        # loss is measured from error between current and newly expected Q values
         loss = self.__loss_fn(y, pred)
         self.list_loss.append(loss.item())
 
@@ -209,7 +210,6 @@ class DQN():
             param.grad.data.clamp_(-1, 1)
         self.__optimizer.step()
 
-
     """
     Save the model.
     """
@@ -217,10 +217,10 @@ class DQN():
     def save_model(self):
         torch.save(self.model.state_dict(), 'agent.pt')
 
-
     """
     Run n episode to train the model.
     """
+
     def train(self, display=False):
         sum_reward, step, mean = 0, 0, 0
         mean_reward = []
@@ -264,7 +264,7 @@ class DQN():
                 if mean >= self.env.spec.reward_threshold:
                     self.episode_done = t
                     print("[{}/{}], r:{}, avg:{}, loss:{}, eps:{}".format(
-                                            t, EPISODE_LEARN, sum_reward, mean, loss, eps))
+                        t, EPISODE_LEARN, sum_reward, mean, loss, eps))
                     break
                 else:
                     mean_reward.clear()
@@ -322,9 +322,14 @@ class DQN():
             print("## Solved after {} episodes.".format(self.episode_done))
         else:
             print('## Not solved, mean={} '.format(mean))
-        print("## Params: LR={}, Gamma={}, Hidden_layer={}, Batch_size={}, Step_target_update={}".format(
-                    self.learning_rate, self.gamma, self.hidden_layer, self.bath_size, self.step_target_update
-                ))
+        print('## Params: LR={}, Gamma={}, Hidden_layer={},'
+              'Batch_size={}, Step_target_update={}'.format(
+                  self.learning_rate,
+                  self.gamma,
+                  self.hidden_layer,
+                  self.bath_size,
+                  self.step_target_update
+              ))
         print('#' * 85)
 
         self.env.close()
@@ -336,12 +341,12 @@ class DQN():
     """
 
     def play(self, num_episodes=20, display=False, model_path=None):
-    
+
         if self.evaluation:
             if model_path is None:
                 raise ValueError('No path model given.')
             self.model.load_state_dict(torch.load(model_path))
-    
+
         self.model.eval()
         self.plot_reward.clear()
 
@@ -361,54 +366,23 @@ class DQN():
 
                 episode_reward += reward
 
-
             print("Episode {} -- reward:{} ".format(episode, episode_reward))
             self.plot_reward.append(episode_reward)
 
         self.env.close()
         self.figure(train=False)
 
-        
-
     def figure(self, training, save=True):
 
-        if self.solved:
-            path = 'playground/cartpole/fig/solved/'
-        else:
-            path = 'playground/cartpole/fig/notsolved/'
-
-        if training:
-            plot_reward = self.plot_reward_train
-            path += 't_lr={}_hidden={}_gamma={}_batchsize={}_steptarget={}.png'.format(
-                            self.learning_rate,
-                            self.hidden_layer,
-                            self.gamma,
-                            self.bath_size,
-                            self.step_target_update)
-            fig, ((ax1), (ax2), (ax3)) = plt.subplots(3, 1, figsize=[9, 9])
-            rolling_mean = pd.Series(self.list_loss).rolling(50).mean()
-            std = pd.Series(self.list_loss).rolling(50).std()
-            ax3.plot(rolling_mean)
-            ax3.fill_between(range(len(self.list_loss)), rolling_mean -
-                            std, rolling_mean+std, color='orange', alpha=0.2)
-            ax3.set_xlabel('Episode')
-            ax3.set_ylabel('Loss')
-        else:
-            plot_reward = self.plot_reward_play
-            path += 'p_lr={}_hidden={}_gamma={}_batchsize={}_steptarget={}.png'.format(
-                            self.learning_rate,
-                            self.hidden_layer,
-                            self.gamma,
-                            self.bath_size,
-                            self.step_target_update)
-            fig, ((ax1), (ax2)) = plt.subplots(2, 1, figsize=[9, 9])
+        plot_reward = self.plot_reward_play
+        fig, ((ax1), (ax2)) = plt.subplots(2, 1, figsize=[9, 9])
 
         window = 30
         rolling_mean = pd.Series(plot_reward).rolling(window).mean()
         std = pd.Series(plot_reward).rolling(window).std()
         ax1.plot(rolling_mean)
         ax1.fill_between(range(len(plot_reward)), rolling_mean -
-                   std, rolling_mean+std, color='orange', alpha=0.2)
+                         std, rolling_mean+std, color='orange', alpha=0.2)
         ax1.set_xlabel('Episode')
         ax1.set_ylabel('Reward')
 
@@ -418,7 +392,7 @@ class DQN():
 
         fig.tight_layout(pad=2)
         if save:
-            plt.savefig(path)
+            plt.savefig('figure.png')
         else:
             plt.show()
 
