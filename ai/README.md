@@ -7,3 +7,16 @@ Tableau à deux valeurs:
     - 1 : SUD
     - 2 : OUEST
     - 3 : NORD
+    
+    
+ ## Action possible
+ 
+- Rotation droite à 90°
+- Rotation gauche à 90°
+- Avancer
+
+
+## Motivation 
+
+Explorer le maximum l'environnement
+ 
