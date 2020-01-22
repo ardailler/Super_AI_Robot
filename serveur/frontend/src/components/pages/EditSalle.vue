@@ -36,7 +36,12 @@
                 show: false,
                 timer: null,
                 canvas: null,
-                context: null
+                context: null,
+                posX: 0,
+                posY: 0,
+                direction: 90,
+                zoom: 1,
+                ratio: 10 // X pixels = 1 Mètres
             }
         },
         beforeRouteEnter (to, from, next) {
@@ -53,13 +58,6 @@
                 next()
             }, to.params.id)
         },
-        components: {
-        },
-        computed: {
-            getName () {
-                return this.salle && this.salle.name ? this.salle.name : ''
-            }
-        },
         mounted () {
             let self = this
             self.id = self.$route.params.id
@@ -71,6 +69,19 @@
                 // self.show = true
             }, 5)
         },
+        components: {
+        },
+        computed: {
+            getName () {
+                return this.salle && this.salle.name ? this.salle.name : ''
+            }
+        },
+        watch: {
+          salle () {
+              this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+              this.drawProcedure()
+          }
+        },
         methods: {
             setSalleData: function (err, data) {
                 if (err) {
@@ -81,27 +92,103 @@
                     // this.emptyData = false
                 }
             },
+            ratioPM (meters) {
+                return 10 * meters / 1 * this.zoom // 10px * x meters / 1 meters = Y pixels to show
+            },
             resizeCanvas() {
-                this.canvas.width = document.getElementById('canvas-container').offsetWidth;
-                this.canvas.height = document.getElementById('canvas-container').offsetHeight;
+                let self = this
+                self.canvas.width = document.getElementById('canvas-container').offsetWidth
+                self.canvas.height = document.getElementById('canvas-container').offsetHeight
 
-                /**
-                 * Your drawings need to be inside this function otherwise they will be reset when
-                 * you resize the browser window and the canvas goes will be cleared.
-                 */
-                // drawStuff();
+                //init robot pos to the center of the page
+                self.posX = self.canvas.width / 2
+                self.posY = self.canvas.height / 2
+
+                // all stuffs which need to draw
+                this.drawProcedure()
+            },
+            drawRobot () {
+                let self = this
+                // test position
+                self.context.fillStyle = "#4d4d81";
+                let taille = self.ratioPM(1) // taille du robot en mètres
+                let x = self.posX
+                let y = self.posY
+                self.drawRect(x, y, taille, taille, 1, self.direction)
+                // self.context.fillRect(self.posX - (taille / 2),self.posY - (taille / 2), taille, taille)
+            },
+            drawProcedure () {
                 this.dotDrawing ()
+                this.drawInfos()
             },
             dotDrawing () {
-                let dotSpace = 10
-                let widthSpace = this.canvas.width - dotSpace
-                let heightSpace = this.canvas.height - dotSpace
+                let self = this
+                let dotSpace = 10 * self.zoom
+                let widthSpace = self.canvas.width - dotSpace
+                let heightSpace = self.canvas.height - dotSpace
                 for (let i = dotSpace; i < widthSpace ; i += dotSpace) {
                     for (let j = dotSpace; j < heightSpace ; j += dotSpace) {
-                        this.context.fillStyle = "#6f6fa9";
-                        this.context.fillRect(i,j, 1, 1);
+                        self.context.fillStyle = "#6f6fa9";
+                        self.context.fillRect(i,j, 1, 1);
                     }
                 }
+            },
+            drawInfos () {
+                let self = this
+                if (self.salle) {
+                    for (let action of self.salle.data) {
+                        if (action.action.type === 'rotation') {
+                            self.direction = parseFloat(action.action.value)
+                            console.log(self.direction)
+                        } else if (action.action.type === 'translation') {
+                            let dx = Math.sin(self.direction * (3.14 / 180))
+                            let dy = Math.cos(self.direction * (3.14 / 180))
+                            let x = self.posX + self.ratioPM(parseFloat(action.action.value)) * dx
+                            let y = self.posY + self.ratioPM(parseFloat(action.action.value)) * dy
+
+                            // draw path
+                            self.context.beginPath()
+                            self.context.moveTo(self.posX, self.posY)
+                            self.context.lineTo(x, y)
+                            self.context.lineWidth = self.ratioPM(1)
+                            self.context.strokeStyle = 'rgba(143, 143, 188,.5)'
+                            self.context.stroke()
+
+                            // new position
+                            self.posX = x
+                            self.posY = y
+                        } else if (action.action.type === 'mur') {
+                            let dx = Math.sin(self.direction * (3.14 / 180))
+                            let dy = Math.cos(self.direction * (3.14 / 180))
+                            let x = self.posX + self.ratioPM(parseFloat(action.action.value)) * dx
+                            let y = self.posY + self.ratioPM(parseFloat(action.action.value)) * dy
+
+                            let taille = self.ratioPM(1) // taille du robot en mètres
+                            self.context.fillStyle = "rgb(249, 113, 115)"
+                            self.drawRect(x, y, taille/2, taille, 1, self.direction)
+                        }
+                    }
+                    self.drawRobot ()
+                }
+                console.log(self.salle.data)
+            },
+            drawRect(x,y,w,h,scale,rotation) {
+                let self = this
+                self.context.save()
+                self.context.setTransform(scale,0,0,scale,x,y)
+                self.context.rotate(rotation)
+                self.context.fillRect(-w/2,-h/2,w,h)
+                self.context.restore()
+
+            },
+            drawImage (img,x,y,w,h,scale,rotation,alpha) {
+                let self = this
+                self.context.save()
+                self.context.globalAlpha = alpha
+                self.context.setTransform(scale,0,0,scale,x,y)
+                self.context.rotate(rotation)
+                self.context.drawImage(img,-img.width/2,-img.height/2,img.width,img.height)
+                self.context.restore()
             }
         },
         beforeDestroy() {

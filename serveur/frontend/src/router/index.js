@@ -41,7 +41,7 @@ const routerOptions = [
         name: 'arnaud',
         component: 'Arnaud',
         meta: {
-            auth: null
+            auth: undefined
         }
     },
     {
