@@ -1,4 +1,3 @@
-import gym
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -6,17 +5,11 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 import pandas as pd
-# from tqdm import tqdm
+import time
+from tqdm import tqdm
 from collections import deque
 from random import sample
-
 from wrapper import make_env
-
-EPISODE_LEARN = 100
-EPISODE_PLAY = 100
-EPS_DECAY = 100
-EPS_START = 1
-EPS_END = 0.01
 
 
 class Memory():
@@ -43,19 +36,15 @@ class Memory():
                 np.array(next_state, dtype=np.float32),
                 np.array(done, dtype=np.uint8))
 
-    @property
-    def size(self):
-        return len(self.memory)
-
 
 class Dense_NN(nn.Module):
 
-    def __init__(self, in_dim, out_dim, hidden_layer):
+    def __init__(self, in_dim, out_dim):
         super(Dense_NN, self).__init__()
 
-        self.fc1 = nn.Linear(in_dim, hidden_layer)
-        self.fc2 = nn.Linear(hidden_layer, hidden_layer)
-        self.fc3 = nn.Linear(hidden_layer, out_dim)
+        self.fc1 = nn.Linear(in_dim, 8)
+        self.fc2 = nn.Linear(8, 16)
+        self.fc3 = nn.Linear(16, out_dim)
 
     def forward(self, x):
         x = self.fc1(x)
@@ -67,87 +56,79 @@ class Dense_NN(nn.Module):
 
 class DQN():
 
-    """
-    Initiale the Gym environnement Cartpole-v1.
-    The learning is done by a DQN.
-    Params :
-        - learning_rate
-        - hidden_layer
-        - gamma
-        - batch_sizes
-        - step_target_update
-    """
-
     def __init__(self,
-                 learning_rate,
-                 hidden_layer,
-                 gamma,
-                 batch_size,
-                 step_target_update,
-                 evaluation=False,
-                 record=False):
-        # Gym environnement Cartpole
-        self.env = make_env("MiniGrid-FourRooms-v0")
+                 env,
+                 config,
+                 train):
 
-        if record:
-            self.env = gym.wrappers.Monitor(
-                self.env, 'playground/cartpole/recording/', force=True)
+        # Class name
+        class_name = type(self).__name__.lower()
 
-        self.evaluation = evaluation
+        # Gym environnement
+        self.env = make_env(env)
+
+        # Are we in evaluation mode
+        self._train = train
+
+        if train:
+            # Parameters
+            self.gamma = config.gamma
+            self.bath_size = config.batch_size
+            self.step_target_update = config.target_update
+            self.freq_learning = config.freq_learning
+            self.epsilon_decay = config.epsilon_decay
+            self.epsilon_start = config.epsilon_start
+            self.epsilon_end = config.epsilon_end
+            self.num_steps = config.num_steps
+            self.start_learning = config.start_learning
+
+            # Experience-Replay
+            self.memory = Memory(config.memory_capacity)
+
         # List to save the rewards
         self.plot_reward = []
+        self.plot_eval = []
 
-        # Parameters
-        if not evaluation:
-            self.learning_rate = learning_rate
-            self.hidden_layer = hidden_layer
-            self.gamma = gamma
-            self.bath_size = batch_size
-            self.step_target_update = step_target_update
+        # Architecture of the neural networks
+        self.model = None
 
-            self.solved = False
-            self.episode_done = []
+        # Error function
+        self.__loss_fn = torch.nn.SmoothL1Loss(reduction='mean')
 
-            # Experience-Replay buffer
-            self.memory = Memory(10000)
+        # Architecture of the neural networks
+        self.model = Dense_NN(self.env.observation_space.n,
+                              self.env.action_space.n)
+        if train:
+            self.qtarget = Dense_NN(
+                self.env.observation_space.n, self.env.action_space.n)
 
-        print(self.env.action_space.n)
-
-        # Dense neural network to compute the q-values
-        self.model = Dense_NN(in_dim=2,
-                              out_dim=self.env.action_space.n,
-                              hidden_layer=hidden_layer)
-
-        if not evaluation:
-            # Dense neural network to compute the q-target
-            self.q_target_nn = Dense_NN(in_dim=2,
-                                        out_dim=self.env.action_space.n,
-                                        hidden_layer=hidden_layer)
-
-            # Backpropagation function
-            self.__optimizer = torch.optim.Adam(
-                self.model.parameters(), lr=learning_rate)
-
-            # Error function
-            self.__loss_fn = torch.nn.MSELoss(reduction='mean')
+        # Backpropagation function
+        self.__optimizer = torch.optim.Adam(
+            self.model.parameters(), lr=config.learning_rate)
 
         # Make the model using the GPU if available
         if torch.cuda.is_available():
-            self.model.cuda('cuda')
-            if not evaluation:
-                self.q_target_nn.cuda('cuda')
             self.device = torch.device('cuda')
+            self.model.cuda()
+            if train:
+                self.qtarget.cuda()
         else:
             self.device = torch.device('cpu')
 
+        # Path for the saves
+        self.path_log = class_name + '.txt'
+        self.path_save = class_name
+        self.path_fig = class_name
+
     """
-    Get an action of the max qvalue from the model.
+    Get the action for the qvalue given a state
     """
 
     def get_policy(self, state):
         with torch.no_grad():
-            x = torch.from_numpy(state).float().to(torch.device('cuda'))
-            return self.model(x).argmax().item()
+            state = torch.from_numpy(state.__array__()).float() \
+                .to(self.device)
+            return self.model(state).argmax().item()
 
     """
     Compute the probabilty of exploration during the training
@@ -156,10 +137,11 @@ class DQN():
 
     def act(self, state, step):
         # Compute the exploration rate
-        eps_threshold = EPS_END + (EPS_START - EPS_END) * \
-            math.exp(-1. * step / EPS_DECAY)
+        eps_threshold = self.epsilon_end + \
+            (self.epsilon_start - self.epsilon_end) * \
+            math.exp(-1. * step / self.epsilon_decay)
 
-        # Random choice between exploration or intensification
+        # Choice between exploration or intensification
         if np.random.rand() < eps_threshold:
             return self.env.action_space.sample(), eps_threshold
         else:
@@ -169,16 +151,7 @@ class DQN():
     Train the model.
     """
 
-    def learn(self, clone):
-
-        # Skip if the memory is not full enough
-        if self.memory.size < self.bath_size:
-            return
-
-        # Clone the q-values model to the q-targets model
-        if clone:
-            self.q_target_nn.load_state_dict(self.model.state_dict())
-
+    def learn(self):
         # Get a random batch from the memory
         state, action, next_state, rewards, done = self.memory.sample(
             self.bath_size)
@@ -195,13 +168,12 @@ class DQN():
         with torch.no_grad():
             action_by_qvalue = self.model(
                 next_state).argmax(1).long().unsqueeze(-1)
-            max_q_target = self.qtarget(next_state).gather(
+            max_qtarget = self.qtarget(next_state).gather(
                 1, action_by_qvalue).squeeze()
 
-            y = rewards + (1. - done) * self.gamma * max_q_target
+            y = rewards + (1. - done) * self.gamma * max_qtarget
 
         loss = self.__loss_fn(y, pred)
-        self.list_loss.append(loss.item())
 
         # backpropagation of loss to NN
         self.__optimizer.zero_grad()
@@ -214,21 +186,37 @@ class DQN():
     Save the model.
     """
 
-    def save_model(self):
-        torch.save(self.model.state_dict(), 'agent.pt')
+    def save_model(self, final=False):
+        if final:
+            path = self.path_save + '-final.pt'
+        else:
+            path = self.path_save + '.pt'
+
+        torch.save(self.model.state_dict(), path)
+
+    """
+    Write logs into a file
+    """
+
+    def log(self, string):
+        with open(self.path_log, "a") as f:
+            f.write(string + "\n")
 
     """
     Run n episode to train the model.
     """
 
-    def train(self, display=False):
-        sum_reward, step, mean = 0, 0, 0
-        mean_reward = []
-        done = False
+    def train(self, display):
+        step, episode, best = 0, 0, 0
+        pbar = tqdm(total=self.num_steps)
 
-        state = self.env.reset()
+        while step <= self.num_steps:
+            episode_reward = 0.0
+            done = False
+            state = self.env.reset()
+            start_time = time.time()
+            episode += 1
 
-        for t in range(EPISODE_LEARN + 1):
             # Run one episode until termination
             while not done:
                 if display:
@@ -238,111 +226,60 @@ class DQN():
                 action, eps = self.act(state, step)
 
                 # Get the output of env from this action
-                next_state, reward, done, info = self.env.step(action)
+                next_state, reward, done, _ = self.env.step(action)
 
-                # Update the values for the log
-                sum_reward += reward
-                step += 1
-
-                # Add the output to the memory
+                # Push the output to the memory
                 self.memory.push(state, action, next_state, reward, done)
 
                 # Learn
-                if step % self.step_target_update == 0:
-                    loss = self.learn(clone=True)
-                else:
-                    loss = self.learn(clone=False)
+                if step >= self.start_learning:
+                    if not step % self.freq_learning:
+                        self.learn()
 
+                    # Clone the q-values model to the q-targets model
+                    if not step % self.step_target_update:
+                        self.qtarget.load_state_dict(self.model.state_dict())
+
+                step += 1
+                pbar.update()
+                episode_reward += reward
                 state = next_state
 
-            # Compute the mean reward for the last 5 actions
-            # If the reward is close to the max (500), we stop
-            # the training
-            mean_reward.append(sum_reward)
-            if t % 10 == 0:
-                mean = sum(mean_reward) / 10
-                if mean >= self.env.spec.reward_threshold:
-                    self.episode_done = t
-                    print("[{}/{}], r:{}, avg:{}, loss:{}, eps:{}".format(
-                        t, EPISODE_LEARN, sum_reward, mean, loss, eps))
-                    break
-                else:
-                    mean_reward.clear()
+            end_time = round(time.time() - start_time, 4)
 
-            if t % 20 == 0:
-                print("[{}/{}], r:{}, avg:{}, loss:{}, eps:{}".format(
-                    t, EPISODE_LEARN, sum_reward, mean, loss, round(eps, 3)))
+            if not episode % 20:
+                mean_reward = sum(self.plot_reward[-20:]) / 20
+                max_reward = max(self.plot_reward[-20:])
+                if max_reward > best:
+                    self.log('Saving model, best reward :{}'.format(
+                        max_reward
+                    ))
+                    self.save_model()
+                    best = max_reward
+                self.log('Episode {} -- step:{} -- avg_reward:{} -- '
+                         'best_reward:{} -- eps:{} -- time:{}'.format(
+                             episode,
+                             step,
+                             mean_reward,
+                             max_reward,
+                             round(eps, 3),
+                             end_time))
 
-            # Update the log and reset the env and variables
-            self.env.reset()
-            self.plot_reward_train.append(sum_reward)
-            sum_reward = 0
-            done = False
+            if not episode % 5:
+                self.plot_reward.append(episode_reward)
 
-        self.episode_done = t
+        pbar.close()
         self.env.close()
+        self.save_model(final=True)
+        self.figure()
 
     """
-    Run the trained the model and verify on 100 episodes if the
-    Cartpole environnement is solved.
-    (Solved : Mean Reward => 475)
+    Eval a trained model for n episodes.
     """
 
-    def test(self, display=True):
-        sum_reward = 0
-        done = False
-        state = self.env.reset()
-        self.plot_reward.clear()
+    def test(self, num_episodes=20, display=False, model_path=None):
 
-        for _ in range(EPISODE_PLAY):
-            # Run one episode until termination
-            while not done:
-                if display:
-                    self.env.render()
-
-                # Select one action
-                action = self.get_policy(state)
-
-                # Get the output of env from this action
-                state, reward, done, _ = self.env.step(action)
-
-                # Update the values for the log
-                sum_reward += reward
-
-            # Update the log and reset the env and variables
-            self.env.reset()
-            self.plot_reward.append(sum_reward)
-            sum_reward = 0
-            done = False
-
-        mean = sum(self.plot_reward) / len(self.plot_reward)
-        if mean >= self.env.spec.reward_threshold:
-            self.solved = True
-            self.save_model()
-            print("## Solved after {} episodes.".format(self.episode_done))
-        else:
-            print('## Not solved, mean={} '.format(mean))
-        print('## Params: LR={}, Gamma={}, Hidden_layer={},'
-              'Batch_size={}, Step_target_update={}'.format(
-                  self.learning_rate,
-                  self.gamma,
-                  self.hidden_layer,
-                  self.bath_size,
-                  self.step_target_update
-              ))
-        print('#' * 85)
-
-        self.env.close()
-
-    """
-    Plot the rewards and the loss during the training.
-    Plot the rewards only during the play.
-    The figures are saved as file.
-    """
-
-    def play(self, num_episodes=20, display=False, model_path=None):
-
-        if self.evaluation:
+        if not self._train:
             if model_path is None:
                 raise ValueError('No path model given.')
             self.model.load_state_dict(torch.load(model_path))
@@ -353,8 +290,15 @@ class DQN():
         for episode in range(1, num_episodes + 1):
             # Run one episode until termination
             episode_reward = 0
+            test = 0
             done = False
             state = self.env.reset()
+
+            for _ in range(np.random.randint(10)):
+                state, _, done, _ = self.env.step(0)
+                if done:
+                    state = self.env.reset()
+
             while not done:
                 if display:
                     self.env.render()
@@ -366,36 +310,40 @@ class DQN():
 
                 episode_reward += reward
 
-            print("Episode {} -- reward:{} ".format(episode, episode_reward))
+            print('Episode {} -- reward:{}'.format(
+                episode,
+                episode_reward,
+                test))
             self.plot_reward.append(episode_reward)
 
         self.env.close()
         self.figure(train=False)
 
-    def figure(self, training, save=True):
+    """
+    Plot the rewards during the training.
+    """
 
-        plot_reward = self.plot_reward_play
-        fig, ((ax1), (ax2)) = plt.subplots(2, 1, figsize=[9, 9])
-
+    def figure(self, train=True):
+        fig, ((ax1), (ax2)) = plt.subplots(2, 1, sharey=True, figsize=[9, 9])
         window = 30
-        rolling_mean = pd.Series(plot_reward).rolling(window).mean()
-        std = pd.Series(plot_reward).rolling(window).std()
+        rolling_mean = pd.Series(self.plot_reward).rolling(window).mean()
+        std = pd.Series(self.plot_reward).rolling(window).std()
         ax1.plot(rolling_mean)
-        ax1.fill_between(range(len(plot_reward)), rolling_mean -
+        ax1.fill_between(range(len(self.plot_reward)), rolling_mean -
                          std, rolling_mean+std, color='orange', alpha=0.2)
         ax1.set_xlabel('Episode')
         ax1.set_ylabel('Reward')
 
-        ax2.plot(plot_reward)
+        ax2.plot(self.plot_reward)
+        ax2.plot(self.plot_eval)
         ax2.set_xlabel('Episode')
         ax2.set_ylabel('Reward')
 
         fig.tight_layout(pad=2)
-        if save:
-            plt.savefig('figure.png')
+
+        if train:
+            path = self.path_fig + '.png'
         else:
+            path = self.path_fig + '-eval.png'
             plt.show()
-
-
-agent = DQN(1e-2, 8, 0.99, 128, 10)
-agent.train(display=True)
+        plt.savefig(path)
