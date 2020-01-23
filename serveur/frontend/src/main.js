@@ -7,6 +7,15 @@ import App from './App.vue'
 import auth from './auth'
 import router from './router'
 import store from './store'
+import VueSocketIO from 'vue-socket.io'
+
+const location = document.location // localhost || @Ip
+
+
+console.log(location.hostname)
+Vue.use(new VueSocketIO({
+  connection: `http://${location.hostname}:80`
+}))
 
 // Set Vue globally
 window.Vue = Vue
@@ -15,9 +24,9 @@ Vue.router = router
 
 // Set Vue authentication
 Vue.use(VueAxios, axios)
-const location = document.location // localhost || @Ip
 axios.defaults.baseURL = `http://${location.hostname}/api`
 Vue.use(VueAuth, auth)
+
 
 // Vue.prototype.$http = http
 Vue.prototype.$axios = axios

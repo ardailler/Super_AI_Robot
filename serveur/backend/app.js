@@ -1,14 +1,18 @@
 //app.js
 
-const createError = require('http-errors');
-const express = require('express');
-const path = require('path');
-const mongoose = require('mongoose');
-const cookieParser = require('cookie-parser');
-const logger = require('morgan');
+const createError = require('http-errors')
+const express = require('express')
+const path = require('path')
+const mongoose = require('mongoose')
+const cookieParser = require('cookie-parser')
+const logger = require('morgan')
 const cors = require('cors')
+/*const http = require('http')
+const WebSocket = require('ws')*/
 require('dotenv').config({path: __dirname + '/.env'})
-
+const app = express()
+const server = require('http').createServer(app);
+const io = require('socket.io')(server)
 
 /*const { spawn } = require('child_process')
 const pythonProcess = spawn('python',["./python/test.py"])
@@ -18,24 +22,12 @@ pythonProcess.stdout.on('data', (data) => {
   console.log(json.test)
   // Do something with the data returned from python script
 })*/
-/////////////////////////////////
-/*const torch = require("@idn/torchjs");
-
-var test_model_path = "../../ai/dqn.pt";
-
-var script_module = new torch.ScriptModule(test_model_path);
-
-var a = torch.rand(1, 5); // Etat de l'environnement
-
-var c = script_module.forward(a); // C = Action à faire par le robot*/
-/////////////////////////////////////
 
 
 const config = require('./config/Config');
 
 const routes = require('./routes')
 
-const app = express();
 
 mongoose.connect(config.DB, {
   useCreateIndex: true,
@@ -44,7 +36,8 @@ mongoose.connect(config.DB, {
 });
 
 app.all("/api/*", function(req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Credentials', true)
   res.header('Access-Control-Expose-Headers', 'Authorization');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
@@ -78,7 +71,57 @@ app.use((err, req, res) => {
   res.render('error');
 });
 
-app.listen(config.APP_PORT); // Listen on port defined in environment
+
+//initialize a simple http server
+/*const server = http.createServer(app)
+
+
+
+//initialize the WebSocket server instance
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', (ws) => {
+
+  //connection is up, let's add a simple simple event
+  ws.on('message', (message) => {
+
+    //log the received message and send it back to the client
+    console.log('received: %s', message);
+    ws.send(`Hello, you sent -> ${message}`);
+  });
+
+  //send immediatly a feedback to the incoming connection
+  ws.send('Hi there, I am a WebSocket server');
+});*/
+
+io.on('connection', function(client) {
+  console.log('Client connected...')
+  client.emit('news', { hello: 'world' })
+  client.on('news', function (data) {
+    console.log(data);
+  })
+  client.on('pingServer', function (data) {
+    console.log(data);
+    client.emit('messageChannel', 'Pong')
+  })
+
+  client.on('join', function(data) {
+    console.log(data);
+    client.emit('messages', 'Hello from server')
+  })
+
+  client.on('messages', function(data) {
+    client.emit('broad', data);
+    console.log(data)
+    client.broadcast.emit('broad',data);
+  })
+})
+// start server
+server.listen(config.APP_PORT, () => {
+  console.log(`Server started on port ${server.address().port} :)`);
+});
+
+// app.listen(config.APP_PORT); // Listen on port defined in environment
 
 
 module.exports = app;
