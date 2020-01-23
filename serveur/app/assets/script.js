@@ -1,36 +1,211 @@
-var app2 = new Vue({
+new Vue({
     el: '#app',
     data: {
-
+        isLoad: false,
+        ip: '192.168.1.12', //todo remove
+        ipConnected: false, // todo false
+        baseURL: '',
+        connexion: {
+            has_error: false,
+            email: '',
+            password: ''
+        },
+        user: {
+            email: '',
+            name: '',
+            token: ''
+        },
+        userConnected: false, // todo false
+        salle: {
+            has_error: false,
+            name: '',
+            _id: ''
+        },
+        salleConnected: false, // todo false
+        compteur: 3,
+        intervalle: null,
+        alpha: null,
+        beta: null,
+        gamma: null,
+        distance: null,
+        mur: null
     },
     mounted () {
+        let self = this
+        // todo delete
+        setTimeout(function () {
+            self.isLoad = true
+        },500)
+
         window.onload = function(){
-            alert('test')
-            front.send('get-data', app.getPath('userData'));
-            alert('test2')
+            front.send('get-ip', app.getPath('userData'));
+            front.send('get-user', app.getPath('userData'));
         }
 
-        front.on('get-data-result', function(msg){
-            if(msg != "@@"){
-                let data = msg.split('@');
-                document.getElementById('author').innerHTML = data[0];
-                document.getElementById('title').innerHTML = data[1];
-                document.getElementById('text').innerHTML = data[2];
+        front.on('get-ip-result', function(msg){
+            if(msg !== ""){
+                self.ip = msg
             }
+            self.isLoad = true
         })
+
+        front.on('get-user-result', function(msg){
+            if(msg !== "$$"){
+                let data = msg.split('$');
+                self.user.email = data[0]
+                self.user.name = data[1]
+                self.user.token = data[2]
+                self.tryConnexion(self.user.token)
+            }
+            self.isLoad = true
+        })
+
         front.on('toast-msg', function(msg){
-            app.toast.show(msg, 1);
+            app.toast.show(msg, 1)
         })
     },
+    beforeDestroy () {
+        let self = this
+        if (self.intervalle !== null) {
+            clearInterval(self.intervalle)
+            self.intervalle = null
+        }
+    },
+    watch: {
+        salleConnected () {
+            let self = this
+            if (self.salleConnected && self.intervalle === null) {
+                self.intervalle = setInterval(function () {
+                    self.compteur --
+                    if (self.compteur === 0) {
+                        clearInterval(self.intervalle)
+                    }
+                }, 1000)
+            }
+            if (!self.salleConnected) {
+                self.compteur = 3
+                try {
+                    window.removeEventListener("deviceorientation", self.process, false)
+                } catch (err) {
+                    console.log(err)
+                }
+            }
+        },
+        compteur () {
+            let self = this
+            if (self.compteur === 0) {
+                if(window.DeviceOrientationEvent) {
+                    window.addEventListener("deviceorientation", self.process, false);
+                    app.toast.show('Orientation go !!', 0);
+                } else {
+                    console.log('Device not support orientation')
+                    app.toast.show('Device not support orientation', 0);
+                    // Le navigateur ne supporte pas l'événement deviceorientation
+                }
+            }
+        }
+    },
     methods: {
-        save () {
-            let author = document.getElementById('author').innerHTML;
-            let title = document.getElementById('title').innerHTML;
-            let text = document.getElementById('text').innerHTML;
-            let msg = author + "@" + title + "@" + text;
-            // let make a complete string of message seperated by @
-            // send this msg and path where to save file to back process to save in external storage of android
-            front.send('save-data', app.getPath('userData'), msg)
+        validateIp () {
+            if (this.ip) {
+                this.ipConnected = true
+                this.baseURL = `http://${this.ip}/api`
+                front.send('save-ip', app.getPath('userData'), this.ip)
+            } else {
+                app.toast.show('Adresse ip vide', 0);
+            }
+        },
+        tryConnexion (token) {
+            let self = this
+            $.ajax({
+                type: "GET",
+                headers: {
+                    'Access-Control-Allow-Origin': `http://${self.ip}/api`,
+                    'Authorization': token
+                },
+                url: `http://${self.ip}/api`+'/auth/user',
+                crossDomain: true,
+                success: function (response) {
+                    self.ipConnected = true
+                    self.userConnected = true
+                    self.baseURL = `http://${this.ip}/api`
+                    app.toast.show('Connexion reussite', 0);
+                },
+                error: function (response) {
+                    app.toast.show('Erreur de connexion', 0);
+                }
+            })
+        },
+        login() {
+            // get the redirect object
+            // var redirect = this.$auth.redirect()
+            let self = this
+            $.ajax({
+                type: "POST",
+                headers: {  'Access-Control-Allow-Origin': self.baseURL },
+                url: self.baseURL+'/auth/login',
+                data: {
+                    email: self.connexion.email,
+                    password: self.connexion.password
+                },
+                crossDomain: true,
+                dataType: 'json',
+                success: function (response) {
+                    if (response.token) {
+                        self.user.email = response.data.email
+                        self.user.name = response.data.name
+                        self.user.token = response.token
+                        self.userConnected = true
+                        let msg = self.user.email + "$" + self.user.name + "$" + self.user.token;
+                        front.send('save-user', app.getPath('userData'), msg)
+                        app.toast.show('Connexion réussi', 0);
+                    } else {
+                        app.toast.show('Erreur de connexion', 0);
+                    }
+                },
+                error: function (response) {
+                    self.connexion.has_error = true
+                    app.toast.show('Erreur lors de la connexion', 0);
+                }
+            })
+        },
+        createSalle () {
+            let self = this
+            if (self.salle.name) {
+                $.ajax({
+                    type: "POST",
+                    headers: {
+                        'Access-Control-Allow-Origin': self.baseURL,
+                        'Authorization': self.user.token
+                    },
+                    url: self.baseURL+'/salles',
+                    data: {
+                        name: self.salle.name
+                    },
+                    crossDomain: true,
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response) {
+                            self.salle._id = response._id
+                            self.salleConnected = true
+                        } else {
+                            app.toast.show('Erreur lors de la création de la salle', 0);
+                        }
+                    },
+                    error: function (response) {
+                        self.salle.has_error = true
+                        app.toast.show('Erreur lors de la connexion', 0);
+                    }
+                })
+            } else {
+                self.salle.has_error = true
+            }
+        },
+        process (event) {
+            let self = this
+            self.alpha = event.alpha;
+            self.beta = event.beta;
+            self.gamma = event.gamma;
         }
     }
 })
