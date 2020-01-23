@@ -2,65 +2,31 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Add this androidjs.js file to your html file to get the functionality of android js -->
+  <!--<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>-->
   <script type="text/javascript" src = "../assets/androidjs.js"></script>
+  <script type="text/javascript" src = "../node_modules/vue/dist/vue.min.js"></script>
+
 </head>
 <body>
-<div class="example-2 card">
-    <div class="wrapper">
-      <div class="header">
-        <div class="date">
-          <span class="day">17</span>
-          <span class="month">April</span>
-          <span class="year">2019</span>
-        </div>
-        <ul class="menu-content">
-          <li>
-            <a href="#" class="fa fa-bookmark-o"></a>
-          </li>
-          <li><a href="#" class="fa fa-heart-o"><span onclick = "save();">SAVE</span></a></li>
-        </ul>
-      </div>
-      <div class="data">
-        <div class="content">
-          <span class="author" id = "author" contenteditable="">Chhekur</span>
-          <h1 class="title" id = "title" contenteditable="">Stranger Things: The sound of the Upside Down</h1>
-          <p class="text" id = "text" contenteditable="">The antsy bingers of Netflix will eagerly anticipate the digital release of the Survive soundtrack, out today.</p>
-        </div>
-      </div>
+  <div id="app" class="app">
+    <div class="content">
+      <br>
+      <span @click="save">SAVE</span>
+      <br>
+      <span class="author" id = "author" contenteditable="">Chhekur</span>
+      <h1 class="title" id = "title" contenteditable="">Stranger Things: The sound of the Upside Down</h1>
+      <p class="text" id = "text" contenteditable="">The antsy bingers of Netflix will eagerly anticipate the digital release of the Survive soundtrack, out today.</p>
     </div>
   </div>
+  <script type="text/javascript" src = "../assets/script.js"></script>
+  <script src="../assets/jquery-3.3.1.slim.min.js"></script>
+  <script src="../assets/popper.min.js"></script>
 </body>
 
 <script>
 
 // define function to get the data from storage if file already saved
-window.onload = function () {
-  front.send('get-data', app.getPath('userData'))
-}
-
-front.on('err', function (msg) {
-  if (msg !== "") {
-    document.getElementById('title').innerHTML = msg;
-  }
-})
-
-front.on('get-data-result', function (msg) {
-  if (msg != "@@") {
-    let data = msg.split('@')
-    document.getElementById('author').innerHTML = data[0];
-    document.getElementById('title').innerHTML = data[1];
-    document.getElementById('text').innerHTML = data[2];
-  }
-})
 // here define some functions to save the data into storage and get back them
-function save () {
-  let author = document.getElementById('author').innerHTML
-  let title = document.getElementById('title').innerHTML
-  let text = document.getElementById('text').innerHTML
-  let msg = author + '@' + title + '@' + text
-  front.send('save-data', app.getPath('userData'), msg)
-}
-
 
 </script>
 
