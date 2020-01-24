@@ -23,8 +23,26 @@ export default {
     components: {
         Menu
     },
+    computed: {
+        _check() {
+            return this.$auth.check();
+        }
+    },
+    watch: {
+        _check() {
+            if (this.$auth.check()) {
+                this.$socket.emit('new-web-client', this.$auth.user()._id)
+            }
+        }
+    },
     mounted () {
-    }
+        // this.$socket.emit('new-web-client', 'PING!')
+    },
+    sockets: {
+        webClient () {
+            alert('I AM A WEB CLIENT !!')
+        }
+    },
 }
 </script>
 

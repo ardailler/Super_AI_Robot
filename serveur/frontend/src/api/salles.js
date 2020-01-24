@@ -7,8 +7,8 @@ export default {
     },
     getById(axios, id) {
         return axios.get(`salles/${id}`);
-    }/*,
-    create(axios, data) {
-        return axios.post('jef5/action/add', data);
-    }*/
+    },
+    delete(axios, id) {
+        return axios.delete(`salles/${id}`);
+    }
 };

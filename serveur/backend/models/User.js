@@ -1,6 +1,7 @@
 //models/User.js
 
 const mongoose = require('mongoose')
+const deepPopulate = require('mongoose-deep-populate')(mongoose);
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
@@ -40,7 +41,11 @@ const userSchema = new Schema({
       type: String,
       required: true
     }
-  }]
+  }],
+  webClient: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'webClient'
+  }
 }, {
   timestamps: true
 })
@@ -76,6 +81,21 @@ userSchema.statics.findByCredentials = async (email, password) => {
   }
   return user
 }
+
+userSchema.statics.updateWebClient = async (_id, client) => {
+  // Search for a user by email and password.
+  try {
+    const user = await User.findById(_id)
+    user.webClient = client
+    await user.save()
+    return user
+  } catch (err) {
+    console.log(err)
+    return err
+  }
+}
+
+userSchema.plugin(deepPopulate)
 
 const User = mongoose.model('User', userSchema);
 
