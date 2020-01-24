@@ -3,8 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import math
-import matplotlib.pyplot as plt
-import pandas as pd
 import time
 from tqdm import tqdm
 from collections import deque
@@ -18,7 +16,11 @@ class Memory():
         self.memory = deque(maxlen=capacity)
 
     def push(self, state, action, next_state, reward, done):
-        self.memory.append((state, action, reward, next_state, done))
+        self.memory.append((state.flatten(),
+                            action,
+                            reward,
+                            next_state.flatten(),
+                            done))
 
     """
     Return a random sample from self.memory of len = number
@@ -42,9 +44,10 @@ class Dense_NN(nn.Module):
     def __init__(self, in_dim, out_dim):
         super(Dense_NN, self).__init__()
 
-        self.fc1 = nn.Linear(in_dim, 8)
-        self.fc2 = nn.Linear(8, 16)
-        self.fc3 = nn.Linear(16, out_dim)
+        in_d = in_dim[0] * in_dim[1]
+        self.fc1 = nn.Linear(in_d, 16)
+        self.fc2 = nn.Linear(16, 32)
+        self.fc3 = nn.Linear(32, out_dim)
 
     def forward(self, x):
         x = self.fc1(x)
@@ -96,11 +99,11 @@ class DQN():
         self.__loss_fn = torch.nn.SmoothL1Loss(reduction='mean')
 
         # Architecture of the neural networks
-        self.model = Dense_NN(self.env.observation_space.n,
+        self.model = Dense_NN(self.env.observation_space,
                               self.env.action_space.n)
         if train:
             self.qtarget = Dense_NN(
-                self.env.observation_space.n, self.env.action_space.n)
+                self.env.observation_space, self.env.action_space.n)
 
         # Backpropagation function
         self.__optimizer = torch.optim.Adam(
@@ -128,6 +131,7 @@ class DQN():
         with torch.no_grad():
             state = torch.from_numpy(state.__array__()).float() \
                 .to(self.device)
+            state = state.flatten()
             return self.model(state).argmax().item()
 
     """
@@ -271,7 +275,6 @@ class DQN():
         pbar.close()
         self.env.close()
         self.save_model(final=True)
-        self.figure()
 
     """
     Eval a trained model for n episodes.
@@ -317,33 +320,3 @@ class DQN():
             self.plot_reward.append(episode_reward)
 
         self.env.close()
-        self.figure(train=False)
-
-    """
-    Plot the rewards during the training.
-    """
-
-    def figure(self, train=True):
-        fig, ((ax1), (ax2)) = plt.subplots(2, 1, sharey=True, figsize=[9, 9])
-        window = 30
-        rolling_mean = pd.Series(self.plot_reward).rolling(window).mean()
-        std = pd.Series(self.plot_reward).rolling(window).std()
-        ax1.plot(rolling_mean)
-        ax1.fill_between(range(len(self.plot_reward)), rolling_mean -
-                         std, rolling_mean+std, color='orange', alpha=0.2)
-        ax1.set_xlabel('Episode')
-        ax1.set_ylabel('Reward')
-
-        ax2.plot(self.plot_reward)
-        ax2.plot(self.plot_eval)
-        ax2.set_xlabel('Episode')
-        ax2.set_ylabel('Reward')
-
-        fig.tight_layout(pad=2)
-
-        if train:
-            path = self.path_fig + '.png'
-        else:
-            path = self.path_fig + '-eval.png'
-            plt.show()
-        plt.savefig(path)

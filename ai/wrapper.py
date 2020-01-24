@@ -1,8 +1,53 @@
-from gym_minigrid.wrappers import ActionBonus, StateBonus
 import numpy as np
 import gym
+import gym_minigrid
 from gym.spaces import Discrete
 from collections import deque
+
+
+def reward_exploration(x):
+    return -0.01928963 + (1.00859 - -0.01928963)/(1 + (x/3.377371)**3.757612)
+
+
+class StateBonus(gym.core.Wrapper):
+    """
+    Adds an exploration bonus based on which positions
+    are visited on the grid.
+    """
+
+    def __init__(self, env):
+        super().__init__(env)
+        self.counts = {}
+
+    def step(self, action):
+        obs, reward, done, info = self.env.step(action)
+
+        # Tuple based on which we index the counts
+        # We use the position after an update
+        env = self.unwrapped
+        tup = (tuple(env.agent_pos))
+
+        # Get the count for this key
+        pre_count = 0
+        if tup in self.counts:
+            pre_count = self.counts[tup]
+
+        # Update the count for this key
+        new_count = pre_count + 1
+        self.counts[tup] = new_count
+
+        bonus = reward_exploration(new_count)
+        reward += bonus
+
+        for x in self.counts:
+            if x != tup and self.counts[x] > 0:
+                self.counts[x] -= 0.005
+
+        return obs, reward, done, info
+
+    def reset(self, **kwargs):
+        self.counts.clear()
+        return self.env.reset(**kwargs)
 
 
 class DistanceToObs(gym.core.ObservationWrapper):
@@ -10,7 +55,6 @@ class DistanceToObs(gym.core.ObservationWrapper):
     def __init__(self, env):
         super().__init__(env)
         self.observation_space = Discrete(2)
-        self.action_space = Discrete(3)
 
     def observation(self, obs):
         new_obs = []
@@ -37,18 +81,6 @@ class DistanceToObs(gym.core.ObservationWrapper):
         return np.array(new_obs)
 
 
-class NegRewardWall(gym.Wrapper):
-    def __init__(self, env):
-        """Stack k last frames."""
-        gym.Wrapper.__init__(self, env)
-
-    def step(self, action):
-        ob, reward, done, info = self.env.step(action)
-        if ob[1] == 0:
-            reward = -1
-        return ob, reward, done, info
-
-
 class Stack(gym.Wrapper):
     def __init__(self, env, k):
         """Stack k last frames."""
@@ -56,7 +88,7 @@ class Stack(gym.Wrapper):
         self.k = k
         self.states = deque([], maxlen=k)
         shp = self.observation_space.n
-        self.observation_space = (shp, k)
+        self.observation_space = (k, shp)
 
     def reset(self):
         ob = self.env.reset()
@@ -76,9 +108,7 @@ class Stack(gym.Wrapper):
 
 def make_env(env):
     env = gym.make(env)
-    env = ActionBonus(env)
     env = StateBonus(env)
     env = DistanceToObs(env)
-    env = NegRewardWall(env)
-    # env = Stack(env, k=8)
+    env = Stack(env, k=8)
     return env
