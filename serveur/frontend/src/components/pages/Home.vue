@@ -36,6 +36,7 @@
       // Fired when the server sends something on the "messageChannel" channel.
       news(data) {
         console.log("news : ", data)
+        console.log("news : ", this.$socket.connected)
         this.socketMessage = data
       }
     },

@@ -1,7 +1,10 @@
 <template>
   <nav class="nav">
     <p class="subtitle_1">{{ $auth.user().name }}</p>
-    <span v-if="$auth.check()" @click.prevent.stop="$auth.logout()" class="logout icon-ios-log-out" title="logout"></span>
+    <div class="icons">
+      <span :class="['socket', haveSocket]" :title="haveSocketText"></span>
+      <span v-if="$auth.check()" @click.prevent.stop="$auth.logout()" class="logout icon-ios-power" title="logout"></span>
+    </div>
   </nav>
 </template>
 <script>
@@ -12,6 +15,14 @@ export default {
     }
   },
   methods: {
+  },
+  computed: {
+    haveSocket () {
+      return this.$socket && this.$socket.connected ? 'icon-ios-wifi': 'icon-ios-airplane'
+    },
+    haveSocketText () {
+      return this.$socket && this.$socket.connected ? 'connecté': 'non connecté'
+    }
   }
 }
 </script>
@@ -29,6 +40,10 @@ export default {
     text-transform: uppercase;
     color: var(--color-primary-10);
   }
+  .icons {
+    display: flex;
+  }
+  .socket,
   .logout {
     position: relative;
     display: block;

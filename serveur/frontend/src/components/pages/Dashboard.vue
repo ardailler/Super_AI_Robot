@@ -17,7 +17,7 @@
             </transition>
             <transition-group name="salles-anim" mode="out-in" enter-active-class="animated zoomIn faster" leave-active-class="animated zoomOut faster" tag="div" class="salle-containter row">
                 <div v-for="(item, index) in salle" :key="'salle-'+index" class="salle-item col-xs-12 col-s-6 col-m-6 col-l-6 col-4">
-                    <Salle :id="item._id" :name="item.name" :time="item.createdAt"></Salle>
+                    <Salle :id="item._id" :name="item.name" :time="item.createdAt" :index="index" @remove="removeSalle"></Salle>
                 </div>
             </transition-group>
 
@@ -46,6 +46,15 @@
                 callback(null, response.data)
             }).catch(error => {
             callback(error, error.response.data)
+        })
+    }
+
+    const deleteSalleById = (callback, _id) => {
+        sallesApi.delete(axios, _id)
+            .then(response => {
+                callback(null)
+            }).catch(error => {
+            callback(error)
         })
     }
 
@@ -121,6 +130,21 @@
                     }, {name: self.name})
                 } else {
                     self.error = "Erreur : Champs `nom` vide."
+                }
+            },
+            removeSalle (id, index) {
+                let self = this
+                if (index && index !== -1) {
+                    deleteSalleById ((err) => {
+                        self.removeSalleData(err, index)
+                    }, id)
+                }
+            },
+            removeSalleData (err, index) {
+                if (err) {
+                    this.error = err.toString()
+                } else {
+                    this.salle.splice( index, 1 )
                 }
             }
         },

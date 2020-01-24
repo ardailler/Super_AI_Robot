@@ -3,15 +3,21 @@
     <p class="subtitle_2 title">{{name}}</p>
     <p class="body_2 time">{{timeFormated}}</p>
     <p class="icon-ios-home icon"></p>
+    <p class="icon-ios-trash icon-remove" title="remove" @click.stop.prevent="remove"></p>
   </router-link>
 </template>
 <script>
+
 export default {
   name: "Menu",
   props: {
     id: {
       type: String,
       default: ''
+    },
+    index: {
+      type: Number,
+      default: -1
     },
     name: {
       type: String,
@@ -39,6 +45,9 @@ export default {
     }
   },
   methods: {
+    remove () {
+      this.$emit('remove', this.id, this.index)
+    }
   }
 }
 </script>
@@ -70,6 +79,13 @@ export default {
     text-align: right;
     z-index: 2;
   }
+   .salle-content .icon-remove {
+     position: absolute;
+     top: 10px;
+     right: 0px;
+     font-size: 24px;
+     z-index: 2;
+   }
    .salle-content .icon {
     position: absolute;
     bottom: -64px;
