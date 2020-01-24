@@ -14,6 +14,9 @@ const app = express()
 const server = require('http').createServer(app);
 const io = require('socket.io')(server)
 
+const User = require('./models/User')
+
+
 /*const { spawn } = require('child_process')
 const pythonProcess = spawn('python',["./python/test.py"])
 pythonProcess.stdout.on('data', (data) => {
@@ -96,10 +99,23 @@ wss.on('connection', (ws) => {
 
 io.on('connection', function(client) {
   console.log('Client connected...')
-  client.emit('news', { hello: 'world' })
-  client.on('news', function (data) {
-    console.log(data);
+
+  client.on('new-web-client', async function (_id) {
+    console.log(client.sessionId)
+
+    /*console.log(_id)
+    const user = await User.updateWebClient(_id, client)
+    user.webClient.emit('messageChannel', 'Pong')*/
   })
+
+
+
+
+
+
+
+
+
   client.on('pingServer', function (data) {
     console.log(data);
     client.emit('messageChannel', 'Pong')

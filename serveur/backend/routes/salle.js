@@ -22,8 +22,7 @@ router.post('/', auth, (req, res) => {
 // delete a salle item
 router.delete('/:id', auth, (req, res) => {
     const { id } = req.params
-    repository.deleteById(id).then((ok) => {
-        console.log(ok)
+    repository.deleteById(id).then(() => {
         console.log(`Deleted record with id: ${id}`)
         res.status(200).json([])
     }).catch((error) => console.log(error))

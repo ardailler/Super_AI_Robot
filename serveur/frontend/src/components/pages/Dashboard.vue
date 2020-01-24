@@ -51,7 +51,7 @@
 
     const deleteSalleById = (callback, _id) => {
         sallesApi.delete(axios, _id)
-            .then(response => {
+            .then(() => {
                 callback(null)
             }).catch(error => {
             callback(error)
