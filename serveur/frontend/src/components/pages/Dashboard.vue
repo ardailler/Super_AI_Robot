@@ -105,6 +105,11 @@
                 self.show = true
             }, 5)
         },
+        sockets: {
+            webClient () {
+                console.log('I AM A WEB CLIENT !!')
+            }
+        },
         methods: {
             setSalleData: function (err, data) {
                 if (err) {

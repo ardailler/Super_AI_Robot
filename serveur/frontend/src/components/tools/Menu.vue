@@ -3,7 +3,7 @@
     <p class="subtitle_1">{{ $auth.user().name }}</p>
     <div class="icons">
       <span :class="['socket', haveSocket]" :title="haveSocketText"></span>
-      <span v-if="$auth.check()" @click.prevent.stop="$auth.logout()" class="logout icon-ios-power" title="logout"></span>
+      <span v-if="_check" @click.prevent.stop="$auth.logout()" class="logout icon-ios-power" title="logout"></span>
     </div>
   </nav>
 </template>
@@ -12,18 +12,42 @@ export default {
   name: "Menu",
   data() {
     return {
+      connected: false
+    }
+  },
+  mounted () {
+  },
+  computed: {
+    haveSocket () {
+      return this.connected ? 'icon-ios-wifi': 'icon-ios-airplane'
+    },
+    haveSocketText () {
+      return this.connected ? 'connecté': 'non connecté'
+    },
+    _check() {
+      return this.$auth.check()
+    }
+  },
+  watch: {
+    _check() {
+      if (this.$auth.check()) {
+        this.$socket.emit('new-web-client', this.$auth.user()._id)
+      }
+    }
+  },
+  sockets: {
+    connected () {
+      this.connected = true
+    },
+    disconnected () {
+      this.connected = false
+    },
+    webRUAlive () {
+        this.$socket.emit('webIsAlive', this.$auth.user()._id)
     }
   },
   methods: {
   },
-  computed: {
-    haveSocket () {
-      return this.$socket && this.$socket.connected ? 'icon-ios-wifi': 'icon-ios-airplane'
-    },
-    haveSocketText () {
-      return this.$socket && this.$socket.connected ? 'connecté': 'non connecté'
-    }
-  }
 }
 </script>
 <style scoped>

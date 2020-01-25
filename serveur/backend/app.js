@@ -75,63 +75,59 @@ app.use((err, req, res) => {
 });
 
 
-//initialize a simple http server
-/*const server = http.createServer(app)
-
-
-
-//initialize the WebSocket server instance
-const wss = new WebSocket.Server({ server });
-
-wss.on('connection', (ws) => {
-
-  //connection is up, let's add a simple simple event
-  ws.on('message', (message) => {
-
-    //log the received message and send it back to the client
-    console.log('received: %s', message);
-    ws.send(`Hello, you sent -> ${message}`);
-  });
-
-  //send immediatly a feedback to the incoming connection
-  ws.send('Hi there, I am a WebSocket server');
-});*/
-
+// websockets
 io.on('connection', function(client) {
   console.log('Client connected...')
-
+  client.emit('connected', 'Hello you are connected')
+  // new web client is connected
   client.on('new-web-client', async function (_id) {
-    console.log(client.sessionId)
-
-    /*console.log(_id)
-    const user = await User.updateWebClient(_id, client)
-    user.webClient.emit('messageChannel', 'Pong')*/
+    client.emit('connected', 'Hello you are connected')
+    const client_id = client.id
+    const user = await User.updateWebClient(_id, client_id, true)
+    io.to(user.webClient).emit('webClient', 'Pong')
+  })
+  // update connection
+  client.on('webIsAlive', async function (_id) {
+    const client_id = client.id
+    const user = await User.updateWebClient(_id, client_id, true)
   })
 
-
-
-
-
-
-
-
-
-  client.on('pingServer', function (data) {
-    console.log(data);
-    client.emit('messageChannel', 'Pong')
-  })
-
-  client.on('join', function(data) {
-    console.log(data);
-    client.emit('messages', 'Hello from server')
-  })
-
-  client.on('messages', function(data) {
-    client.emit('broad', data);
-    console.log(data)
-    client.broadcast.emit('broad',data);
-  })
 })
+
+// check connection
+setInterval( async () => {
+  User.find({}, function (err, users) {
+    users.forEach(async (user) => {
+      try {
+        await checkWebConnection(user)
+      } catch (e) {
+        console.log(e)
+      }
+    })
+  })
+}, 10000);
+
+
+async function checkWebConnection (user)
+{
+  try {
+    if (user.webClient && user.webClient !== '') {
+      if (io.sockets.connected[user.webClient] && !user.webIsAlive) {
+        io.sockets.connected[user.webClient].emit('disconnected', 'Hello you are disconnected')
+        io.sockets.connected[user.webClient].disconnect()
+        await User.updateWebClient(user._id, '', false)
+      } else {
+        await User.updateWebClient(user._id, user.webClient, false)
+        io.to(user.webClient).emit('webRUAlive')
+      }
+    }
+  } catch (e) {
+    console.log(e)
+  }
+
+}
+
+
 // start server
 server.listen(config.APP_PORT, () => {
   console.log(`Server started on port ${server.address().port} :)`);
@@ -140,4 +136,4 @@ server.listen(config.APP_PORT, () => {
 // app.listen(config.APP_PORT); // Listen on port defined in environment
 
 
-module.exports = app;
+module.exports = app

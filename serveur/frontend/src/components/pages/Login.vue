@@ -109,7 +109,7 @@
                         // handle redirection
                         // const redirectTo = redirect ? redirect.from.name : app.$auth.user().role === 2 ? 'admin.dashboard' : 'dashboard'
                         app.switchClose()
-                        this.$socket.emit('pingServer', 'PING!')
+                        app.$socket.emit('new-web-client', app.$auth.user()._id)
                         setTimeout(function () {
                             app.$router.push({name: 'dashboard'})
                         }, 1000)

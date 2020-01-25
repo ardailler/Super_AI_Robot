@@ -4,6 +4,7 @@
             <h6>Salle {{ getName }}</h6>
             <span class="subtitle_1">n°{{id}}</span>
         </div>
+        <button class="startRand" @click.stop.prevent="startRand">start Rand</button>
         <div class="content">
             <div id="canvas-container">
                 <canvas id="canvasSalle"></canvas>
@@ -41,7 +42,8 @@
                 posY: 0,
                 direction: 90,
                 zoom: 1.5,
-                ratio: 10 // X pixels = 1 Mètres
+                ratio: 10, // X pixels = 1 Mètres
+                deleteTimer: null //todo delete
             }
         },
         beforeRouteEnter (to, from, next) {
@@ -97,15 +99,8 @@
             },
             resizeCanvas() {
                 let self = this
-                self.canvas.width = document.getElementById('canvas-container').offsetWidth
-                self.canvas.height = document.getElementById('canvas-container').offsetHeight
-
-                //init robot pos to the center of the page
-                self.posX = self.canvas.width / 2
-                self.posY = self.canvas.height / 2
-
                 // all stuffs which need to draw
-                this.drawProcedure()
+                self.drawProcedure()
             },
             drawRobot () {
                 let self = this
@@ -118,8 +113,15 @@
                 // self.context.fillRect(self.posX - (taille / 2),self.posY - (taille / 2), taille, taille)
             },
             drawProcedure () {
-                this.dotDrawing ()
-                this.drawInfos()
+                let self = this
+                self.canvas.width = document.getElementById('canvas-container').offsetWidth
+                self.canvas.height = document.getElementById('canvas-container').offsetHeight
+                //init robot pos to the center of the page
+                self.posX = self.canvas.width / 2
+                self.posY = self.canvas.height / 2
+                self.context.clearRect(0, 0, self.canvas.width, self.canvas.height);
+                self.dotDrawing ()
+                self.drawInfos()
             },
             dotDrawing () {
                 let self = this
@@ -135,12 +137,14 @@
             },
             drawInfos () {
                 let self = this
+                let order = []
                 if (self.salle) {
                     for (let action of self.salle.data) {
                         if (action.action.type === 'rotation') {
                             self.direction = parseFloat(action.action.value)
-                            console.log(self.direction)
+                            order.push('rotation : ', self.direction)
                         } else if (action.action.type === 'translation') {
+                            order.push('translation')
                             let dx = Math.sin(self.direction * (3.14 / 180))
                             let dy = Math.cos(self.direction * (3.14 / 180))
                             let x = self.posX + self.ratioPM(parseFloat(action.action.value)) * dx
@@ -158,6 +162,7 @@
                             self.posX = x
                             self.posY = y
                         } else if (action.action.type === 'mur') {
+                            order.push('mur')
                             let dx = Math.sin(self.direction * (3.14 / 180))
                             let dy = Math.cos(self.direction * (3.14 / 180))
                             let x = self.posX + self.ratioPM(parseFloat(action.action.value)) * dx
@@ -170,13 +175,13 @@
                     }
                     self.drawRobot ()
                 }
-                console.log(self.salle.data)
+                console.log(order)
             },
             drawRect(x,y,w,h,scale,rotation) {
                 let self = this
                 self.context.save()
                 self.context.setTransform(scale,0,0,scale,x,y)
-                self.context.rotate((3.14 / 180) * rotation)
+                self.context.rotate((3.14 / 180) * -rotation)
                 self.context.fillRect(-w/2,-h/2,w,h)
                 self.context.restore()
 
@@ -189,11 +194,52 @@
                 self.context.rotate(rotation)
                 self.context.drawImage(img,-img.width/2,-img.height/2,img.width,img.height)
                 self.context.restore()
+            },
+            startRand () { // todo delete
+                let self = this
+                let rotation = 0
+                let translation = 0
+                let mur = 0
+                if (self.deleteTimer) {
+                    clearInterval(self.deleteTimer)
+                }
+                self.deleteTimer = setInterval(function () {
+                    rotation = Math.floor(Math.random() * 359) + 0
+                    translation = Math.floor(Math.random() * 20) + 5
+                    mur = Math.floor(Math.random() * 20) + 5
+
+                    let data = [
+                        {
+                            "action": {
+                                "type": "rotation",
+                                "value": rotation
+                            }
+                        },
+                        {
+                            "action": {
+                                "type": "translation",
+                                "value": translation
+                            }
+                        },
+                        {
+                            "action": {
+                                "type": "mur",
+                                "value": mur
+                            }
+                        }
+                    ]
+                    self.salle.data = self.salle.data.concat(data)
+                    self.drawProcedure()
+                },2000)
             }
         },
         beforeDestroy() {
+            let self = this
             window.removeEventListener('resize', self.resizeCanvas, false)
             clearInterval(self.timer)
+            if (self.deleteTimer) {
+                clearInterval(self.deleteTimer)
+            }
         }
         /*beforeRouteLeave: function(to, from, next) {
             let self = this
@@ -212,6 +258,10 @@
 </script>
 
 <style scoped>
+    .startRand {
+        position: absolute;
+        left: 600px;
+    }
     .create-salle-container {
         position: absolute;
         display: flex;
