@@ -98,6 +98,15 @@ io.on('connection', function(client) {
         io.to(client_id).emit('newActionsAdded', {salle_id: salle_id, actions: actions})
     })
 
+
+
+  client.on('new-app-client', async function (_id) {
+    client.emit('connected', 'Hello you are connected'+_id)
+    /* const client_id = client.id
+    const user = await User.updateWebClient(_id, client_id, true)
+    io.to(user.webClient).emit('webClient') */
+  })
+
 })
 
 // check connection

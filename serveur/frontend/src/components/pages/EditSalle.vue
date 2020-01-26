@@ -323,9 +323,9 @@
         -moz-border-radius: 25px;
         border-radius: 25px;
         background-color: var(--color-primary-10);
-        -webkit-box-shadow:  -6px -6px 26px 0 rgba(255, 255, 255, 1), 6px 6px 16px 0 rgba(29, 29, 48, 1);
-        -moz-box-shadow:  -6px -6px 26px 0 rgba(255, 255, 255, 1), 6px 6px 16px 0 rgba(29, 29, 48, 1);
-        box-shadow:  -6px -6px 26px 0 rgba(255, 255, 255, 1), 6px 6px 16px 0 rgba(29, 29, 48, 1);
+        -webkit-box-shadow:  -6px -6px 16px 0 rgba(255, 255, 255, 1), 6px 6px 16px 0 rgba(29, 29, 48, 1);
+        -moz-box-shadow:  -6px -6px 16px 0 rgba(255, 255, 255, 1), 6px 6px 16px 0 rgba(29, 29, 48, 1);
+        box-shadow:  -6px -6px 16px 0 rgba(255, 255, 255, 1), 6px 6px 16px 0 rgba(29, 29, 48, 1);
         border: 2px solid white;
     }
     #canvas-container canvas {

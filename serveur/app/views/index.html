@@ -1,88 +1,90 @@
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Add this androidjs.js file to your html file to get the functionality of android js -->
-  <!--<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>-->
-  <link rel="stylesheet" href="../assets/css/main.css">
-  <link rel="stylesheet" href="../assets/css/animate.css">
-  <link rel="stylesheet" href="../assets/css/laravlock-icons.css">
-  <link rel="stylesheet" href="../assets/css/laravlock-icons-ie7.css">
-  <link rel="stylesheet" href="../assets/css/main.css">
-  <script type="text/javascript" src = "../assets/androidjs.js"></script>
-  <script type="text/javascript" src = "../assets/jquery-3.3.1.slim.min.js"></script>
-  <script type="text/javascript" src = "../node_modules/vue/dist/vue.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Add this androidjs.js file to your html file to get the functionality of android js -->
+    <!--<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>-->
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/animate.css">
+    <link rel="stylesheet" href="../assets/css/laravlock-icons.css">
+    <link rel="stylesheet" href="../assets/css/laravlock-icons-ie7.css">
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <script type="text/javascript" src = "../assets/androidjs.js"></script>
+    <script type="text/javascript" src = "../assets/jquery-3.3.1.slim.min.js"></script>
+    <script type="text/javascript" src = "../node_modules/vue/dist/vue.min.js"></script>
+    <script src="../assets/socket.io-client.js"></script>
 
 </head>
 <body>
-  <div id="app" class="app">
+<div id="app" class="app">
     <transition name="open-anim" enter-active-class="animated slideInUp faster" leave-active-class="animated slideOutUp faster">
-      <div id="open-container" v-if="!ipConnected">
-        <img src="../assets/img/robot.svg" alt="logo">
-        <p class="subtitle_1">Super IA Robot</p>
-        <div class="pos-ip">
-          <transition name="ip-anim" enter-active-class="animated fadeInUp faster delay-1s" leave-active-class="animated fadeOutDown faster">
-            <div class="ip-container" v-if="isLoad">
-              <input type="text" id="adresse-ip" class="body_1" v-model="ip" placeholder="adresse ip du server">
-              <button @click.stop.prevent="validateIp">Valider</button>
+        <div id="open-container" v-if="!ipConnected">
+            <img src="../assets/img/robot.svg" alt="logo">
+            <p class="subtitle_1">Super IA Robot</p>
+            <div class="pos-ip">
+                <transition name="ip-anim" enter-active-class="animated fadeInUp faster delay-1s" leave-active-class="animated fadeOutDown faster">
+                    <div class="ip-container" v-if="isLoad">
+                        <input type="text" id="adresse-ip" class="body_1" v-model="ip" placeholder="adresse ip du server">
+                        <button @click.stop.prevent="validateIp">Valider</button>
+                    </div>
+                </transition>
             </div>
-          </transition>
         </div>
-      </div>
     </transition>
 
     <transition name="open-anim" enter-active-class="animated slideInUp faster" leave-active-class="animated slideOutUp faster">
-      <div id="connexion-container" v-if="ipConnected && !userConnected">
-        <form autocomplete="off" key="'SignIn'" @submit.prevent="login" method="post">
-          <p class="icon icon-ios-lock"></p>
-          <p class="subtitle_1">Connexion</p>
-          <div class="alert alert-danger" v-if="connexion.has_error">
-            <p class="body_2">Erreur, impossible de se connecter avec ces identifiants.</p>
-          </div>
-          <div class="form-group">
-            <!--<label for="email" class="subtitle_2">E-mail</label>-->
-            <input type="email" id="email" class="form-control body_2" placeholder="E-MAIL" v-model="connexion.email" required>
-          </div>
-          <div class="form-group">
-            <!--<label for="password" class="subtitle_2">Mot de passe</label>-->
-            <input type="password" id="password" class="form-control body_2" placeholder="MOT DE PASSE" v-model="connexion.password" required>
-          </div>
-          <button type="submit" class="btn btn-default">Connexion</button>
-        </form>
-      </div>
+        <div id="connexion-container" v-if="ipConnected && !userConnected">
+            <form autocomplete="off" key="'SignIn'" @submit.prevent="login" method="post">
+                <p class="icon icon-ios-lock"></p>
+                <p class="subtitle_1">Connexion</p>
+                <div class="alert alert-danger" v-if="connexion.has_error">
+                    <p class="body_2">Erreur, impossible de se connecter avec ces identifiants.</p>
+                </div>
+                <div class="form-group">
+                    <!--<label for="email" class="subtitle_2">E-mail</label>-->
+                    <input type="email" id="email" class="form-control body_2" placeholder="E-MAIL" v-model="connexion.email" required>
+                </div>
+                <div class="form-group">
+                    <!--<label for="password" class="subtitle_2">Mot de passe</label>-->
+                    <input type="password" id="password" class="form-control body_2" placeholder="MOT DE PASSE" v-model="connexion.password" required>
+                </div>
+                <button type="submit" class="btn btn-default">Connexion</button>
+            </form>
+        </div>
     </transition>
 
     <transition name="open-anim" enter-active-class="animated slideInUp faster" leave-active-class="animated slideOutUp faster">
-      <div id="salle-container" v-if="ipConnected && userConnected">
-        <p class="username subtitle_1">{{user.name}}</p>
-        <transition name="open-anim" enter-active-class="animated zoomIn faster" leave-active-class="animated zoomOut faster">
-          <form autocomplete="off" @submit.prevent="createSalle" method="post" v-if="!salleConnected">
-            <p class="icon icon-ios-add-circle"></p>
-            <p class="subtitle_1">Nouvelle Salle</p>
-            <div class="alert alert-danger" v-if="salle.has_error">
-              <p class="body_2">Problèmes lors de la création de la salle.</p>
-            </div>
-            <div class="form-group">
-              <!--<label for="email" class="subtitle_2">E-mail</label>-->
-              <input type="text" id="salleName" class="form-control body_2" placeholder="Nom" v-model="salle.name" required>
-            </div>
-            <button type="submit" class="btn btn-default">Créer</button>
-          </form>
-        </transition>
-        <transition name="open-anim" enter-active-class="animated zoomIn faster" leave-active-class="animated zoomOut faster">
-          <div class="salle-running" v-if="salleConnected">
-            <h1 v-if="compteur > 0">{{compteur}}</h1>
-              <div class="orientation" v-else>
-                  <h6>{{salle.name}}</h6>
-                  <p class="body_2">Alpha : {{alpha}}</p>
-                  <p class="body_2">Beta : {{beta}}</p>
-                  <p class="body_2">Gamma : {{gamma}}</p>
-                  <p class="body_2">Distance : {{distance}}</p>
-                  <p class="body_2">Mur : {{mur}}</p>
-              </div>
+        <div id="salle-container" v-if="ipConnected && userConnected">
+            <p class="username subtitle_1">{{user.name}}</p>
+            <span @click.prevent.stop="logout" class="logout icon-ios-power" title="logout"></span>
+            <transition name="open-anim" enter-active-class="animated zoomIn faster" leave-active-class="animated zoomOut faster">
+                <form autocomplete="off" @submit.prevent="createSalle" method="post" v-if="!salleConnected">
+                    <p class="icon icon-ios-add-circle"></p>
+                    <p class="subtitle_1">Nouvelle Salle</p>
+                    <div class="alert alert-danger" v-if="salle.has_error">
+                        <p class="body_2">Problèmes lors de la création de la salle.</p>
+                    </div>
+                    <div class="form-group">
+                        <!--<label for="email" class="subtitle_2">E-mail</label>-->
+                        <input type="text" id="salleName" class="form-control body_2" placeholder="Nom" v-model="salle.name" required>
+                    </div>
+                    <button type="submit" class="btn btn-default">Créer</button>
+                </form>
+            </transition>
+            <transition name="open-anim" enter-active-class="animated zoomIn faster" leave-active-class="animated zoomOut faster">
+                <div class="salle-running" v-if="salleConnected">
+                    <h1 v-if="compteur > 0">{{compteur}}</h1>
+                    <div class="orientation" v-else>
+                        <h6>{{salle.name}}</h6>
+                        <p class="body_2">Alpha : {{alpha}}</p>
+                        <p class="body_2">Beta : {{beta}}</p>
+                        <p class="body_2">Gamma : {{gamma}}</p>
+                        <p class="body_2">Distance : {{distance}}</p>
+                        <p class="body_2">Mur : {{mur}}</p>
+                    </div>
 
-          </div>
-        </transition>
-      </div>
+                </div>
+            </transition>
+        </div>
     </transition>
     <!--<div class="content">
 
@@ -93,29 +95,29 @@
       <h1 class="title" id = "title" contenteditable="">Stranger Things: The sound of the Upside Down</h1>
       <p class="text" id = "text" contenteditable="">The antsy bingers of Netflix will eagerly anticipate the digital release of the Survive soundtrack, out today.</p>
     </div>-->
-  </div>
-  <script type="text/javascript" src = "../assets/script.js"></script>
-  <script src="../assets/jquery-3.3.1.slim.min.js"></script>
-  <script src="../assets/popper.min.js"></script>
+</div>
+<script type="text/javascript" src = "../assets/script.js"></script>
+<script src="../assets/jquery-3.3.1.slim.min.js"></script>
+<script src="../assets/popper.min.js"></script>
 </body>
 
 <script>
 
-// define function to get the data from storage if file already saved
-// here define some functions to save the data into storage and get back them
+    // define function to get the data from storage if file already saved
+    // here define some functions to save the data into storage and get back them
 
 </script>
 
 <style>
-  @import url('../assets/css/ip.css');
-  @import url('../assets/css/connexion.css');
-  @import url('../assets/css/salle.css');
+    @import url('../assets/css/ip.css');
+    @import url('../assets/css/connexion.css');
+    @import url('../assets/css/salle.css');
 
-  #app {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
+    #app {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
 </style>
 </html>

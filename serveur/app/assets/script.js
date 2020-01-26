@@ -2,7 +2,7 @@ new Vue({
     el: '#app',
     data: {
         isLoad: false,
-        ip: '192.168.1.12', //todo remove
+        ip: '192.168.178.73', //todo remove
         ipConnected: false, // todo false
         baseURL: '',
         connexion: {
@@ -12,7 +12,7 @@ new Vue({
         },
         user: {
             email: '',
-            name: '',
+            name: '', // todo remove ''
             token: ''
         },
         userConnected: false, // todo false
@@ -28,7 +28,8 @@ new Vue({
         beta: null,
         gamma: null,
         distance: null,
-        mur: null
+        mur: null,
+        socket: null
     },
     mounted () {
         let self = this
@@ -103,13 +104,22 @@ new Vue({
                     // Le navigateur ne supporte pas l'événement deviceorientation
                 }
             }
+        },
+        ipConnected () {
+            let self = this
+            console.log('ip : ', self.ip)
+            self.socket = io(`http://${self.ip}:80`)
+            self.socket.on('connected', function(data){
+                console.log(data)
+            })
         }
     },
     methods: {
         validateIp () {
-            if (this.ip) {
-                this.ipConnected = true
-                this.baseURL = `http://${this.ip}/api`
+            let self = this
+            if (self.ip) {
+                self.ipConnected = true
+                self.baseURL = `http://${self.ip}/api`
                 front.send('save-ip', app.getPath('userData'), this.ip)
             } else {
                 app.toast.show('Adresse ip vide', 0);
@@ -129,6 +139,7 @@ new Vue({
                     self.ipConnected = true
                     self.userConnected = true
                     self.baseURL = `http://${this.ip}/api`
+                    self.socket.emit('new-app-client', 'id' ); // todo id
                     app.toast.show('Connexion reussite', 0);
                 },
                 error: function (response) {
@@ -152,11 +163,13 @@ new Vue({
                 dataType: 'json',
                 success: function (response) {
                     if (response.token) {
+                        // todo stock id
                         self.user.email = response.data.email
                         self.user.name = response.data.name
                         self.user.token = response.token
                         self.userConnected = true
                         let msg = self.user.email + "$" + self.user.name + "$" + self.user.token;
+                        self.socket.emit('new-app-client', 'id' ); // todo id
                         front.send('save-user', app.getPath('userData'), msg)
                         app.toast.show('Connexion réussi', 0);
                     } else {
@@ -166,6 +179,33 @@ new Vue({
                 error: function (response) {
                     self.connexion.has_error = true
                     app.toast.show('Erreur lors de la connexion', 0);
+                }
+            })
+        },
+        logout () {
+            let self = this
+            $.ajax({
+                type: "POST",
+                headers: {
+                    'Access-Control-Allow-Origin': self.baseURL,
+                    'Authorization': self.user.token
+                },
+                data: {},
+                url: self.baseURL+'/auth/logout',
+                crossDomain: true,
+                dataType: 'json',
+                success: function (response) {
+                    console.log(response)
+                    self.user.email = ''
+                    self.user.name = ''
+                    self.user.token = ''
+                    self.userConnected = false
+                    let msg = '' + "$" + '' + "$" + ''
+                    front.send('save-user', app.getPath('userData'), msg)
+                    app.toast.show('Deconnexion réussi', 0);
+                },
+                error: function (response) {
+                    app.toast.show('Erreur lors de la deconnexion', 0);
                 }
             })
         },

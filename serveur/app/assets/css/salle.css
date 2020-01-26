@@ -15,6 +15,13 @@
     top: 20px;
     left: 20px;
 }
+#salle-container .logout {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+    font-size: 24px;
+}
 
 #salle-container form {
     position: absolute;
