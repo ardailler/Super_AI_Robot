@@ -1,15 +1,19 @@
 <template>
     <div class="create-salle-container">
-        <div class="title">
-            <h6>Salle {{ getName }}</h6>
-            <span class="subtitle_1">n°{{id}}</span>
-        </div>
-        <button class="startRand" @click.stop.prevent="startRand">start Rand</button>
-        <div class="content">
-            <div id="canvas-container">
-                <canvas id="canvasSalle"></canvas>
+        <transition name="edit-title-anim" enter-active-class="animated fadeInDown faster" leave-active-class="animated fadeOutUp faster">
+            <div class="title" v-if="show">
+                <h6>Salle {{ getName }}</h6>
+                <span class="subtitle_1">n°{{id}}</span>
             </div>
-        </div>
+        </transition>
+        <button class="startRand" @click.stop.prevent="startRand">start Rand</button>
+        <transition name="edit-content-anim" enter-active-class="animated zoomIn faster" leave-active-class="animated zoomOut faster">
+            <div class="content" v-if="show">
+                <div id="canvas-container">
+                    <canvas id="canvasSalle"></canvas>
+                </div>
+            </div>
+        </transition>
     </div>
 </template>
 
@@ -36,6 +40,7 @@
                 salle: null,
                 show: false,
                 timer: null,
+                timer1: null,
                 canvas: null,
                 context: null,
                 posX: 0,
@@ -69,13 +74,15 @@
         mounted () {
             let self = this
             self.id = self.$route.params.id
-            self.canvas = document.getElementById('canvasSalle')
-            self.context = self.canvas.getContext('2d')
+            self.timer1 = setTimeout(function () {
+                self.show = true
+            }, 5)
             self.timer = setTimeout(function () {
+                self.canvas = document.getElementById('canvasSalle')
+                self.context = self.canvas.getContext('2d')
                 self.resizeCanvas()
                 window.addEventListener('resize', self.resizeCanvas, false)
-                // self.show = true
-            }, 5)
+            }, 500)
         },
         components: {
         },
@@ -86,8 +93,10 @@
         },
         watch: {
           salle () {
-              this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-              this.drawProcedure()
+              if (this.context) {
+                  this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                  this.drawProcedure()
+              }
           }
         },
         methods: {
@@ -248,23 +257,21 @@
             let self = this
             window.removeEventListener('resize', self.resizeCanvas, false)
             clearInterval(self.timer)
+            clearInterval(self.timer1)
             if (self.deleteTimer) {
                 clearInterval(self.deleteTimer)
             }
-        }
-        /*beforeRouteLeave: function(to, from, next) {
+        },
+        beforeRouteLeave: function(to, from, next) {
             let self = this
-            if (self.$auth.check()) {
+            self.salle = null
+            clearInterval(self.timer)
+            clearInterval(self.timer1)
+            self.show = false
+            setTimeout(function () {
                 next()
-            } else {
-                self.salle = null
-                clearInterval(self.timer)
-                self.show = false
-                setTimeout(function () {
-                    next()
-                }, 500)
-            }
-        }*/
+            }, 500)
+        }
     }
 </script>
 
@@ -280,6 +287,7 @@
         min-height: 100%;
         width: 100%;
         padding: 84px 20px 20px 20px;
+        background: var(--color-light);
     }
     .title {
         position: relative;
@@ -314,6 +322,11 @@
         -webkit-border-radius: 25px;
         -moz-border-radius: 25px;
         border-radius: 25px;
+        background-color: var(--color-primary-10);
+        -webkit-box-shadow:  -6px -6px 26px 0 rgba(255, 255, 255, 1), 6px 6px 16px 0 rgba(29, 29, 48, 1);
+        -moz-box-shadow:  -6px -6px 26px 0 rgba(255, 255, 255, 1), 6px 6px 16px 0 rgba(29, 29, 48, 1);
+        box-shadow:  -6px -6px 26px 0 rgba(255, 255, 255, 1), 6px 6px 16px 0 rgba(29, 29, 48, 1);
+        border: 2px solid white;
     }
     #canvas-container canvas {
         position: absolute;

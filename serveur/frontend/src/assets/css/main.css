@@ -63,7 +63,7 @@
   --color-secondary: var(--color-secondary-default);
   --color-tertiary: var(--color-tertiary-default);
   --color-dark: black;
-  --color-light: white;
+  --color-light: #E0E5EC;
 
   --color-alert1: #ff3f34;
   --color-alert2: #ffbab7;
@@ -92,6 +92,7 @@ html,body {
   width: 100%;
   height: 100%;
   font-size: 100%;
+  background-color: var(--color-light);
 
 }
 h1 {

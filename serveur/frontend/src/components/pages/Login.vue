@@ -237,6 +237,10 @@
     .sign-pages .center button {
         margin-top: 5px;
     }
+    .sign-pages .center .form-group input {
+        background-color: var(--color-light);
+    }
+
     .sign-pages .center .form-group .form-control {
         border: none;
         padding: 2px 0;

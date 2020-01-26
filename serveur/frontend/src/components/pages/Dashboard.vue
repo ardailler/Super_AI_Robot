@@ -186,7 +186,7 @@
         display: block;
         background-color: transparent;
         color: var(--color-tertiary-20);
-        border: 1px solid var(--color-tertiary-20);
+        border: 1px solid var(--color-tertiary-00);
         -webkit-border-radius: 5px;
         -moz-border-radius: 5px;
         border-radius: 5px;
@@ -204,7 +204,11 @@
     .title > .subtitle_2:hover {
         color: var(--color-tertiary);
         background-color: var(--color-tertiary-00);
-        border: 1px solid var(--color-tertiary-00);
+        border: 1px solid white;
+
+        -webkit-box-shadow:  6px 6px 16px rgba(163,177,198, 1), -6px -6px 16px rgba(255,255,255, 1);
+        -moz-box-shadow:  6px 6px 16px rgba(163,177,198, 1), -6px -6px 16px rgba(255,255,255, 1);
+        box-shadow:  6px 6px 16px rgba(163,177,198, 1), -6px -6px 16px rgba(255,255,255, 1);
 
         -webkit-transition: 0.25s ease-out;
         -moz-transition: 0.25s ease-out;
@@ -225,8 +229,6 @@
         transition: 0.25s ease-out;
     }
 
-    .title > .subtitle_2:hover input {
-    }
     .salle-containter {
         position: relative;
         width: 100%;
@@ -254,14 +256,10 @@
         color: var(--color-secondary-00);
         padding: 2.5px;
         text-align: center;
-
     }
-
     @media only screen and (min-width: 992px) {
         .salle-containter {
             width: 66%;
         }
     }
-
-
 </style>

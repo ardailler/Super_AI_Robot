@@ -1,6 +1,9 @@
 <template>
   <nav class="nav">
-    <p class="subtitle_1">{{ $auth.user().name }}</p>
+    <div class="leftSide">
+      <p class="go-back icon-ios-arrow-back" @click.prevent.stop="$router.go(-1)" title="back"></p>
+      <p class="subtitle_1">{{ $auth.user().name }}</p>
+    </div>
     <div class="icons">
       <span :class="['socket', haveSocket]" :title="haveSocketText"></span>
       <span v-if="_check" @click.prevent.stop="$auth.logout()" class="logout icon-ios-power" title="logout"></span>
@@ -67,9 +70,16 @@ export default {
     text-transform: uppercase;
     color: var(--color-primary-10);
   }
+  .leftSide,
   .icons {
     display: flex;
+    justify-content: center;
+    align-items: center;
   }
+  .leftSide > *{
+    margin-right: 10px;
+  }
+  .go-back,
   .socket,
   .logout {
     position: relative;

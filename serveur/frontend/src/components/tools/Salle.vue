@@ -74,6 +74,11 @@ export default {
     -ms-transition: 0.25s ease;
     -o-transition: 0.25s ease;
     transition: 0.25s ease;
+
+
+    -webkit-box-shadow:  inset 9px 9px 16px rgba(163,177,198, 1), inset -9px -9px 16px rgba(255,255,255, 1);
+    -moz-box-shadow:  inset 9px 9px 16px rgba(163,177,198, 1), inset -9px -9px 16px rgba(255,255,255, 1);
+    box-shadow:  inset 9px 9px 16px rgba(163,177,198, 1), inset -9px -9px 16px rgba(255,255,255, 1);
   }
    .salle-content p:nth-child(2) {
     text-align: right;
@@ -98,6 +103,10 @@ export default {
     background-color: var(--color-primary-40);
     border: 2px solid var(--color-primary-40);
     color: white;
+     border: 2px solid white !important;
+     -webkit-box-shadow:  9px 9px 16px rgba(163,177,198, 1), -9px -9px 16px rgba(255,255,255, 1);
+     -moz-box-shadow:  9px 9px 16px rgba(163,177,198, 1), -9px -9px 16px rgba(255,255,255, 1);
+     box-shadow:  9px 9px 16px rgba(163,177,198, 1), -9px -9px 16px rgba(255,255,255, 1);
   }
 
   .salle-content.color1 {
