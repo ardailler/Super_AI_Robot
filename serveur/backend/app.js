@@ -84,13 +84,19 @@ io.on('connection', function(client) {
     client.emit('connected', 'Hello you are connected')
     const client_id = client.id
     const user = await User.updateWebClient(_id, client_id, true)
-    io.to(user.webClient).emit('webClient', 'Pong')
+    io.to(user.webClient).emit('webClient')
   })
-  // update connection
-  client.on('webIsAlive', async function (_id) {
-    const client_id = client.id
-    const user = await User.updateWebClient(_id, client_id, true)
-  })
+    // update connection
+    client.on('webIsAlive', async function (_id) {
+        const client_id = client.id
+        const user = await User.updateWebClient(_id, client_id, true)
+    })
+    // update actions
+    client.on('addActions', async function (_id, salle_id, actions) {
+        const user = await User.findById(_id)
+        const client_id = user.webClient
+        io.to(client_id).emit('newActionsAdded', {salle_id: salle_id, actions: actions})
+    })
 
 })
 

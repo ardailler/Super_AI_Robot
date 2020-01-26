@@ -43,7 +43,13 @@
                 direction: 90,
                 zoom: 1.5,
                 ratio: 10, // X pixels = 1 Mètres
-                deleteTimer: null //todo delete
+                deleteTimer: null, //todo delete
+                style: {
+                    dotColor: '#ffffff',
+                    robotColor: '#cfcfe2',
+                    traceColor: 'rgba(143, 143, 188,.5)',
+                    murColor: "rgb(249, 113, 115)"
+                }
             }
         },
         beforeRouteEnter (to, from, next) {
@@ -105,7 +111,7 @@
             drawRobot () {
                 let self = this
                 // test position
-                self.context.fillStyle = "#4d4d81";
+                self.context.fillStyle = self.style.robotColor;
                 let taille = self.ratioPM(1) // taille du robot en mètres
                 let x = self.posX
                 let y = self.posY
@@ -130,21 +136,18 @@
                 let heightSpace = self.canvas.height - dotSpace
                 for (let i = dotSpace; i < widthSpace ; i += dotSpace) {
                     for (let j = dotSpace; j < heightSpace ; j += dotSpace) {
-                        self.context.fillStyle = "#6f6fa9";
+                        self.context.fillStyle = self.style.dotColor;
                         self.context.fillRect(i,j, 1, 1);
                     }
                 }
             },
             drawInfos () {
                 let self = this
-                let order = []
                 if (self.salle) {
                     for (let action of self.salle.data) {
                         if (action.action.type === 'rotation') {
                             self.direction = parseFloat(action.action.value)
-                            order.push('rotation : ', self.direction)
                         } else if (action.action.type === 'translation') {
-                            order.push('translation')
                             let dx = Math.sin(self.direction * (3.14 / 180))
                             let dy = Math.cos(self.direction * (3.14 / 180))
                             let x = self.posX + self.ratioPM(parseFloat(action.action.value)) * dx
@@ -155,27 +158,25 @@
                             self.context.moveTo(self.posX, self.posY)
                             self.context.lineTo(x, y)
                             self.context.lineWidth = self.ratioPM(1)
-                            self.context.strokeStyle = 'rgba(143, 143, 188,.5)'
+                            self.context.strokeStyle = self.style.traceColor
                             self.context.stroke()
 
                             // new position
                             self.posX = x
                             self.posY = y
                         } else if (action.action.type === 'mur') {
-                            order.push('mur')
                             let dx = Math.sin(self.direction * (3.14 / 180))
                             let dy = Math.cos(self.direction * (3.14 / 180))
                             let x = self.posX + self.ratioPM(parseFloat(action.action.value)) * dx
                             let y = self.posY + self.ratioPM(parseFloat(action.action.value)) * dy
 
                             let taille = self.ratioPM(1) // taille du robot en mètres
-                            self.context.fillStyle = "rgb(249, 113, 115)"
+                            self.context.fillStyle = self.style.murColor
                             self.drawRect(x, y, taille, taille/2, 1, self.direction)
                         }
                     }
                     self.drawRobot ()
                 }
-                console.log(order)
             },
             drawRect(x,y,w,h,scale,rotation) {
                 let self = this
@@ -228,9 +229,19 @@
                             }
                         }
                     ]
-                    self.salle.data = self.salle.data.concat(data)
-                    self.drawProcedure()
+                    // self.salle.data = self.salle.data.concat(data)
+                    // self.drawProcedure()
+                    self.$socket.emit('addActions', self.$auth.user()._id, self.id, data)
                 },2000)
+            }
+        },
+        sockets: {
+            newActionsAdded (data) {
+                let self = this
+                if (self.id === data.salle_id) {
+                    self.salle.data = self.salle.data.concat(data.actions)
+                    self.drawProcedure()
+                }
             }
         },
         beforeDestroy() {
@@ -297,7 +308,6 @@
         display: block;
         width: 100%;
         height: 100%;
-        border: 2px solid var(--color-primary-40);
         flex: 1;
         overflow: hidden;
 
@@ -307,7 +317,7 @@
     }
     #canvas-container canvas {
         position: absolute;
-        background-color: transparent;
+        background-color: var(--color-primary-10);
     }
     /*@media only screen and (min-width: 992px) {
         .salle-containter {

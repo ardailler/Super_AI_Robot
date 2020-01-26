@@ -16,6 +16,9 @@ export default {
     }
   },
   mounted () {
+    if (this.$auth.check()) {
+      this.$socket.emit('new-web-client', this.$auth.user()._id)
+    }
   },
   computed: {
     haveSocket () {
