@@ -10,7 +10,9 @@ Tableau à deux valeurs:
     
     
  ## Action possible
- 
+- Action 0 : gauche
+- Action 1 : droite
+- Action 2 : Avancer
 - Rotation droite à 90°
 - Rotation gauche à 90°
 - Avancer
