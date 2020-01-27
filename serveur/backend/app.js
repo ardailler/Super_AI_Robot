@@ -18,14 +18,10 @@ const User = require('./models/User')
 
 // 1-4 orientation, 1-3 distance au mur
 const { spawn } = require('child_process')
-const pythonProcess = spawn('python',["./python/get_action.py", "1 2 1 2 1 2 1 2 1 2 1 2 1 2 1 2"])
+const pythonProcess = spawn('python',["./python/get_action.py", "1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2"])
 pythonProcess.stdout.on('data', (data) => {
-  console.log("herererreererer")
   let json = JSON.parse(data.toString())
-  console.log("herererreererer")
   console.log(json)
-  console.log(json.test)
-  // Do something with the data returned from python script
 })
 
 

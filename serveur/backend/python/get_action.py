@@ -25,15 +25,11 @@ class Dense_NN(nn.Module):
         return self.fc3(x)
 
 
-string = 
-
-
 model = Dense_NN(16, 3)
-model.load_state_dict(torch.load('dqn.pt', map_location=torch.device('cpu')))
-
+model.load_state_dict(torch.load('./python/dqn.pt', map_location=torch.device('cpu')))
 
 model.eval()
-state = np.fromstring(sys.argv[0], sep=' ')
+state = np.fromstring(sys.argv[1], sep=',')
 state = torch.from_numpy(state).float()
 state = state.flatten()
 action = model(state).argmax().item()
