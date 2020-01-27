@@ -18,7 +18,7 @@ const User = require('./models/User')
 
 // 1-4 orientation, 1-3 distance au mur
 const { spawn } = require('child_process')
-const pythonProcess = spawn('python',["./python/get_action.py", "--state [[1,2],[1,2],[1,2],[1,2],[1,2],[1,2],[1,2],[1,2]]"])
+const pythonProcess = spawn('python',["./python/get_action.py", "1 2 1 2 1 2 1 2 1 2 1 2 1 2 1 2"])
 pythonProcess.stdout.on('data', (data) => {
   console.log("herererreererer")
   let json = JSON.parse(data.toString())

@@ -25,9 +25,7 @@ class Dense_NN(nn.Module):
         return self.fc3(x)
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--state', default=[])
-args = parser.parse_args()
+string = 
 
 
 model = Dense_NN(16, 3)
@@ -35,7 +33,7 @@ model.load_state_dict(torch.load('dqn.pt', map_location=torch.device('cpu')))
 
 
 model.eval()
-state = np.array(args.state)
+state = np.fromstring(sys.argv[0], sep=' ')
 state = torch.from_numpy(state).float()
 state = state.flatten()
 action = model(state).argmax().item()
