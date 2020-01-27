@@ -129,7 +129,7 @@ class DQN():
 
     def get_policy(self, state):
         with torch.no_grad():
-            state = torch.from_numpy(state.__array__()).float() \
+            state = torch.from_numpy(state).float() \
                 .to(self.device)
             state = state.flatten()
             return self.model(state).argmax().item()
