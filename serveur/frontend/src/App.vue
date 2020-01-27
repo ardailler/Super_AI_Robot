@@ -1,7 +1,7 @@
 <template>
   <div class="container">
       <transition name="menu-anim" enter-active-class="animated fadeInDown faster delay-1s" leave-active-class="animated fadeOutUp faster">
-          <Menu v-if="$auth.check()"></Menu>
+          <Menu v-if="_check"></Menu>
       </transition>
       <router-view></router-view>
   </div>
@@ -23,7 +23,13 @@ export default {
     components: {
         Menu
     },
+    computed: {
+        _check() {
+            return this.$auth.check();
+        }
+    },
     mounted () {
+        // this.$socket.emit('new-web-client', 'PING!')
     }
 }
 </script>

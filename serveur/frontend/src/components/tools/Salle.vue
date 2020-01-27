@@ -3,15 +3,21 @@
     <p class="subtitle_2 title">{{name}}</p>
     <p class="body_2 time">{{timeFormated}}</p>
     <p class="icon-ios-home icon"></p>
+    <p class="icon-ios-trash icon-remove" title="remove" @click.stop.prevent="remove"></p>
   </router-link>
 </template>
 <script>
+
 export default {
   name: "Menu",
   props: {
     id: {
       type: String,
       default: ''
+    },
+    index: {
+      type: Number,
+      default: -1
     },
     name: {
       type: String,
@@ -39,6 +45,9 @@ export default {
     }
   },
   methods: {
+    remove () {
+      this.$emit('remove', this.id, this.index)
+    }
   }
 }
 </script>
@@ -65,11 +74,23 @@ export default {
     -ms-transition: 0.25s ease;
     -o-transition: 0.25s ease;
     transition: 0.25s ease;
+
+
+    -webkit-box-shadow:  inset 9px 9px 16px rgba(163,177,198, 1), inset -9px -9px 16px rgba(255,255,255, 1);
+    -moz-box-shadow:  inset 9px 9px 16px rgba(163,177,198, 1), inset -9px -9px 16px rgba(255,255,255, 1);
+    box-shadow:  inset 9px 9px 16px rgba(163,177,198, 1), inset -9px -9px 16px rgba(255,255,255, 1);
   }
    .salle-content p:nth-child(2) {
     text-align: right;
     z-index: 2;
   }
+   .salle-content .icon-remove {
+     position: absolute;
+     top: 10px;
+     right: 0px;
+     font-size: 24px;
+     z-index: 2;
+   }
    .salle-content .icon {
     position: absolute;
     bottom: -64px;
@@ -82,6 +103,10 @@ export default {
     background-color: var(--color-primary-40);
     border: 2px solid var(--color-primary-40);
     color: white;
+     border: 2px solid white !important;
+     -webkit-box-shadow:  9px 9px 16px rgba(163,177,198, 1), -9px -9px 16px rgba(255,255,255, 1);
+     -moz-box-shadow:  9px 9px 16px rgba(163,177,198, 1), -9px -9px 16px rgba(255,255,255, 1);
+     box-shadow:  9px 9px 16px rgba(163,177,198, 1), -9px -9px 16px rgba(255,255,255, 1);
   }
 
   .salle-content.color1 {

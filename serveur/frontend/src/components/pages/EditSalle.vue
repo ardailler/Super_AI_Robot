@@ -1,14 +1,19 @@
 <template>
     <div class="create-salle-container">
-        <div class="title">
-            <h6>Salle {{ getName }}</h6>
-            <span class="subtitle_1">n°{{id}}</span>
-        </div>
-        <div class="content">
-            <div id="canvas-container">
-                <canvas id="canvasSalle"></canvas>
+        <transition name="edit-title-anim" enter-active-class="animated fadeInDown faster" leave-active-class="animated fadeOutUp faster">
+            <div class="title" v-if="show">
+                <h6>Salle {{ getName }}</h6>
+                <span class="subtitle_1">n°{{id}}</span>
             </div>
-        </div>
+        </transition>
+        <button class="startRand" @click.stop.prevent="startRand">start Rand</button>
+        <transition name="edit-content-anim" enter-active-class="animated zoomIn faster" leave-active-class="animated zoomOut faster">
+            <div class="content" v-if="show">
+                <div id="canvas-container">
+                    <canvas id="canvasSalle"></canvas>
+                </div>
+            </div>
+        </transition>
     </div>
 </template>
 
@@ -35,13 +40,21 @@
                 salle: null,
                 show: false,
                 timer: null,
+                timer1: null,
                 canvas: null,
                 context: null,
                 posX: 0,
                 posY: 0,
                 direction: 90,
                 zoom: 1.5,
-                ratio: 10 // X pixels = 1 Mètres
+                ratio: 10, // X pixels = 1 Mètres
+                deleteTimer: null, //todo delete
+                style: {
+                    dotColor: '#ffffff',
+                    robotColor: '#cfcfe2',
+                    traceColor: 'rgba(143, 143, 188,.5)',
+                    murColor: "rgb(249, 113, 115)"
+                }
             }
         },
         beforeRouteEnter (to, from, next) {
@@ -61,13 +74,15 @@
         mounted () {
             let self = this
             self.id = self.$route.params.id
-            self.canvas = document.getElementById('canvasSalle')
-            self.context = self.canvas.getContext('2d')
+            self.timer1 = setTimeout(function () {
+                self.show = true
+            }, 5)
             self.timer = setTimeout(function () {
+                self.canvas = document.getElementById('canvasSalle')
+                self.context = self.canvas.getContext('2d')
                 self.resizeCanvas()
                 window.addEventListener('resize', self.resizeCanvas, false)
-                // self.show = true
-            }, 5)
+            }, 500)
         },
         components: {
         },
@@ -78,8 +93,10 @@
         },
         watch: {
           salle () {
-              this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-              this.drawProcedure()
+              if (this.context) {
+                  this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                  this.drawProcedure()
+              }
           }
         },
         methods: {
@@ -97,20 +114,13 @@
             },
             resizeCanvas() {
                 let self = this
-                self.canvas.width = document.getElementById('canvas-container').offsetWidth
-                self.canvas.height = document.getElementById('canvas-container').offsetHeight
-
-                //init robot pos to the center of the page
-                self.posX = self.canvas.width / 2
-                self.posY = self.canvas.height / 2
-
                 // all stuffs which need to draw
-                this.drawProcedure()
+                self.drawProcedure()
             },
             drawRobot () {
                 let self = this
                 // test position
-                self.context.fillStyle = "#4d4d81";
+                self.context.fillStyle = self.style.robotColor;
                 let taille = self.ratioPM(1) // taille du robot en mètres
                 let x = self.posX
                 let y = self.posY
@@ -118,8 +128,15 @@
                 // self.context.fillRect(self.posX - (taille / 2),self.posY - (taille / 2), taille, taille)
             },
             drawProcedure () {
-                this.dotDrawing ()
-                this.drawInfos()
+                let self = this
+                self.canvas.width = document.getElementById('canvas-container').offsetWidth
+                self.canvas.height = document.getElementById('canvas-container').offsetHeight
+                //init robot pos to the center of the page
+                self.posX = self.canvas.width / 2
+                self.posY = self.canvas.height / 2
+                self.context.clearRect(0, 0, self.canvas.width, self.canvas.height);
+                self.dotDrawing ()
+                self.drawInfos()
             },
             dotDrawing () {
                 let self = this
@@ -128,7 +145,7 @@
                 let heightSpace = self.canvas.height - dotSpace
                 for (let i = dotSpace; i < widthSpace ; i += dotSpace) {
                     for (let j = dotSpace; j < heightSpace ; j += dotSpace) {
-                        self.context.fillStyle = "#6f6fa9";
+                        self.context.fillStyle = self.style.dotColor;
                         self.context.fillRect(i,j, 1, 1);
                     }
                 }
@@ -139,7 +156,6 @@
                     for (let action of self.salle.data) {
                         if (action.action.type === 'rotation') {
                             self.direction = parseFloat(action.action.value)
-                            console.log(self.direction)
                         } else if (action.action.type === 'translation') {
                             let dx = Math.sin(self.direction * (3.14 / 180))
                             let dy = Math.cos(self.direction * (3.14 / 180))
@@ -151,7 +167,7 @@
                             self.context.moveTo(self.posX, self.posY)
                             self.context.lineTo(x, y)
                             self.context.lineWidth = self.ratioPM(1)
-                            self.context.strokeStyle = 'rgba(143, 143, 188,.5)'
+                            self.context.strokeStyle = self.style.traceColor
                             self.context.stroke()
 
                             // new position
@@ -164,19 +180,18 @@
                             let y = self.posY + self.ratioPM(parseFloat(action.action.value)) * dy
 
                             let taille = self.ratioPM(1) // taille du robot en mètres
-                            self.context.fillStyle = "rgb(249, 113, 115)"
+                            self.context.fillStyle = self.style.murColor
                             self.drawRect(x, y, taille, taille/2, 1, self.direction)
                         }
                     }
                     self.drawRobot ()
                 }
-                console.log(self.salle.data)
             },
             drawRect(x,y,w,h,scale,rotation) {
                 let self = this
                 self.context.save()
                 self.context.setTransform(scale,0,0,scale,x,y)
-                self.context.rotate((3.14 / 180) * rotation)
+                self.context.rotate((3.14 / 180) * -rotation)
                 self.context.fillRect(-w/2,-h/2,w,h)
                 self.context.restore()
 
@@ -189,29 +204,82 @@
                 self.context.rotate(rotation)
                 self.context.drawImage(img,-img.width/2,-img.height/2,img.width,img.height)
                 self.context.restore()
+            },
+            startRand () { // todo delete
+                let self = this
+                let rotation = 0
+                let translation = 0
+                let mur = 0
+                if (self.deleteTimer) {
+                    clearInterval(self.deleteTimer)
+                }
+                self.deleteTimer = setInterval(function () {
+                    rotation = Math.floor(Math.random() * 359) + 0
+                    translation = Math.floor(Math.random() * 20) + 5
+                    mur = Math.floor(Math.random() * 20) + 5
+
+                    let data = [
+                        {
+                            "action": {
+                                "type": "rotation",
+                                "value": rotation
+                            }
+                        },
+                        {
+                            "action": {
+                                "type": "translation",
+                                "value": translation
+                            }
+                        },
+                        {
+                            "action": {
+                                "type": "mur",
+                                "value": mur
+                            }
+                        }
+                    ]
+                    // self.salle.data = self.salle.data.concat(data)
+                    // self.drawProcedure()
+                    self.$socket.emit('addActions', self.$auth.user()._id, self.id, data)
+                },2000)
+            }
+        },
+        sockets: {
+            newActionsAdded (data) {
+                let self = this
+                if (self.id === data.salle_id) {
+                    self.salle.data = self.salle.data.concat(data.actions)
+                    self.drawProcedure()
+                }
             }
         },
         beforeDestroy() {
+            let self = this
             window.removeEventListener('resize', self.resizeCanvas, false)
             clearInterval(self.timer)
-        }
-        /*beforeRouteLeave: function(to, from, next) {
-            let self = this
-            if (self.$auth.check()) {
-                next()
-            } else {
-                self.salle = null
-                clearInterval(self.timer)
-                self.show = false
-                setTimeout(function () {
-                    next()
-                }, 500)
+            clearInterval(self.timer1)
+            if (self.deleteTimer) {
+                clearInterval(self.deleteTimer)
             }
-        }*/
+        },
+        beforeRouteLeave: function(to, from, next) {
+            let self = this
+            self.salle = null
+            clearInterval(self.timer)
+            clearInterval(self.timer1)
+            self.show = false
+            setTimeout(function () {
+                next()
+            }, 500)
+        }
     }
 </script>
 
 <style scoped>
+    .startRand {
+        position: absolute;
+        left: 600px;
+    }
     .create-salle-container {
         position: absolute;
         display: flex;
@@ -219,6 +287,7 @@
         min-height: 100%;
         width: 100%;
         padding: 84px 20px 20px 20px;
+        background: var(--color-light);
     }
     .title {
         position: relative;
@@ -247,17 +316,21 @@
         display: block;
         width: 100%;
         height: 100%;
-        border: 2px solid var(--color-primary-40);
         flex: 1;
         overflow: hidden;
 
         -webkit-border-radius: 25px;
         -moz-border-radius: 25px;
         border-radius: 25px;
+        background-color: var(--color-primary-10);
+        -webkit-box-shadow:  -6px -6px 16px 0 rgba(255, 255, 255, 1), 6px 6px 16px 0 rgba(29, 29, 48, 1);
+        -moz-box-shadow:  -6px -6px 16px 0 rgba(255, 255, 255, 1), 6px 6px 16px 0 rgba(29, 29, 48, 1);
+        box-shadow:  -6px -6px 16px 0 rgba(255, 255, 255, 1), 6px 6px 16px 0 rgba(29, 29, 48, 1);
+        border: 2px solid white;
     }
     #canvas-container canvas {
         position: absolute;
-        background-color: transparent;
+        background-color: var(--color-primary-10);
     }
     /*@media only screen and (min-width: 992px) {
         .salle-containter {

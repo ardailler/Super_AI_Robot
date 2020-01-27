@@ -1,7 +1,7 @@
 {
   "name": "super_ai_robot_app",
   "app-name": "app_thibaud",
-  "package-name": "mypkg_thibaud",
+  "package-name": "apppkg_thibaud",
   "project-type": "webview",
   "icon": "./assets/icon/icon.png",
   "permission": [
@@ -14,8 +14,16 @@
   "description": "",
   "main": "main.js",
   "dependencies": {
-    "androidjs": "^2.0.0",
-    "johnny-five": "^1.4.0"
+    "androidjs": "^2.0.1",
+    "johnny-five": "^1.4.0",
+    "socket.io-client": "^2.3.0",
+    "vue": "^2.6.11"
+  },
+  "theme": {
+    "fullScreen": true,
+    "colorAccent": "#f97173",
+    "colorPrimary": "#4d4d81",
+    "colorPrimaryDark": "#0a0a10"
   },
   "devDependencies": {},
   "scripts": {

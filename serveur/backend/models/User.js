@@ -40,7 +40,15 @@ const userSchema = new Schema({
       type: String,
       required: true
     }
-  }]
+  }],
+  webClient: {
+    type: String,
+    default: ''
+  },
+  webIsAlive: {
+    type: Boolean,
+    default: false
+  }
 }, {
   timestamps: true
 })
@@ -58,7 +66,7 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.generateAuthToken = async function() {
   // Generate an auth token for the user
   const user = this
-  const token = jwt.sign({_id: user._id}, process.env.JWT_KEY, { expiresIn: 60 * 60 })
+  const token = jwt.sign({_id: user._id}, process.env.JWT_KEY, { expiresIn: 60 * 120 })
   user.tokens = user.tokens.concat({token})
   await user.save()
   return token
@@ -75,6 +83,20 @@ userSchema.statics.findByCredentials = async (email, password) => {
     throw new Error({ error: 'Invalid login credentials' })
   }
   return user
+}
+
+userSchema.statics.updateWebClient = async (_id, client_id, client_alive) => {
+  // Search for a user by email and password.
+  try {
+    const user = await User.findById(_id)
+    user.webClient = client_id
+    user.webIsAlive = client_alive
+    await user.save()
+    return user
+  } catch (err) {
+    console.log(err)
+    return err
+  }
 }
 
 const User = mongoose.model('User', userSchema);

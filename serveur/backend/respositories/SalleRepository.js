@@ -9,8 +9,8 @@ class SalleRepository {
   }
 
   // create a new salle
-  create(name) {
-    const newSalle = { name };
+  create(name, creator) {
+    const newSalle = { name, creator};
     const salle = new this.model(newSalle);
     return salle.save();
   }
@@ -18,6 +18,10 @@ class SalleRepository {
   // return all salles
   findAll() {
     return this.model.find();
+  }
+  // return all salles
+  findQuery(_id) {
+    return this.model.find({creator: _id})
   }
 
   //find salle by the id

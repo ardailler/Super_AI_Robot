@@ -1,16 +1,51 @@
 <template>
-  <div class="container">
-    <div class="card card-default">
-      <div class="card-header">Bienvenue</div>
-
-      <div class="card-body">
-        <p>
-          American  Main Barbary Coast scuttle hardtack spanker fire ship grapple jack code  of conduct port. Port red ensign Shiver me timbers provost salmagundi  bring a spring upon her cable pillage cog crow's nest lateen sail.  Barbary Coast quarterdeck lass coffer keel hulk mizzen me square-rigged  loot.
-        </p>
-        <p>
-          Yardarm starboard keelhaul list schooner prow booty cackle  fruit gabion topmast. Plunder shrouds Nelsons folly jack Arr parley warp  grog blossom ballast pressgang. Knave crack Jennys tea cup flogging log  man-of-war hearties killick long clothes six pounders hulk.
-        </p>
-      </div>
-    </div>
+  <div>
+    <p v-if="isConnected">We're connected to the server!</p>
+    <p>Message from server: "{{socketMessage}}"</p>
+    <button @click="pingServer()">Ping Server</button>
   </div>
 </template>
+
+<script>
+  export default {
+    data() {
+      return {
+        isConnected: false,
+        socketMessage: ''
+      }
+    },
+
+    sockets: {
+      connect() {
+        // Fired when the socket connects.
+        console.log('isConnected')
+        this.isConnected = true;
+      },
+
+      disconnect() {
+        console.log('isNotConnected')
+        this.isConnected = false;
+      },
+
+      // Fired when the server sends something on the "messageChannel" channel.
+      messageChannel(data) {
+        console.log(data)
+        this.socketMessage = data
+      },
+
+      // Fired when the server sends something on the "messageChannel" channel.
+      news(data) {
+        console.log("news : ", data)
+        console.log("news : ", this.$socket.connected)
+        this.socketMessage = data
+      }
+    },
+
+    methods: {
+      pingServer() {
+        // Send the "pingServer" event to the server.
+        this.$socket.emit('pingServer', 'PING!')
+      }
+    }
+  }
+</script>

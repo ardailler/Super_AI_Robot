@@ -17,7 +17,7 @@
             </transition>
             <transition-group name="salles-anim" mode="out-in" enter-active-class="animated zoomIn faster" leave-active-class="animated zoomOut faster" tag="div" class="salle-containter row">
                 <div v-for="(item, index) in salle" :key="'salle-'+index" class="salle-item col-xs-12 col-s-6 col-m-6 col-l-6 col-4">
-                    <Salle :id="item._id" :name="item.name" :time="item.createdAt"></Salle>
+                    <Salle :id="item._id" :name="item.name" :time="item.createdAt" :index="index" @remove="removeSalle"></Salle>
                 </div>
             </transition-group>
 
@@ -46,6 +46,15 @@
                 callback(null, response.data)
             }).catch(error => {
             callback(error, error.response.data)
+        })
+    }
+
+    const deleteSalleById = (callback, _id) => {
+        sallesApi.delete(axios, _id)
+            .then(() => {
+                callback(null)
+            }).catch(error => {
+            callback(error)
         })
     }
 
@@ -96,6 +105,11 @@
                 self.show = true
             }, 5)
         },
+        sockets: {
+            webClient () {
+                console.log('I AM A WEB CLIENT !!')
+            }
+        },
         methods: {
             setSalleData: function (err, data) {
                 if (err) {
@@ -121,6 +135,21 @@
                     }, {name: self.name})
                 } else {
                     self.error = "Erreur : Champs `nom` vide."
+                }
+            },
+            removeSalle (id, index) {
+                let self = this
+                if (index && index !== -1) {
+                    deleteSalleById ((err) => {
+                        self.removeSalleData(err, index)
+                    }, id)
+                }
+            },
+            removeSalleData (err, index) {
+                if (err) {
+                    this.error = err.toString()
+                } else {
+                    this.salle.splice( index, 1 )
                 }
             }
         },
@@ -157,7 +186,7 @@
         display: block;
         background-color: transparent;
         color: var(--color-tertiary-20);
-        border: 1px solid var(--color-tertiary-20);
+        border: 1px solid var(--color-tertiary-00);
         -webkit-border-radius: 5px;
         -moz-border-radius: 5px;
         border-radius: 5px;
@@ -175,7 +204,11 @@
     .title > .subtitle_2:hover {
         color: var(--color-tertiary);
         background-color: var(--color-tertiary-00);
-        border: 1px solid var(--color-tertiary-00);
+        border: 1px solid white;
+
+        -webkit-box-shadow:  6px 6px 16px rgba(163,177,198, 1), -6px -6px 16px rgba(255,255,255, 1);
+        -moz-box-shadow:  6px 6px 16px rgba(163,177,198, 1), -6px -6px 16px rgba(255,255,255, 1);
+        box-shadow:  6px 6px 16px rgba(163,177,198, 1), -6px -6px 16px rgba(255,255,255, 1);
 
         -webkit-transition: 0.25s ease-out;
         -moz-transition: 0.25s ease-out;
@@ -196,8 +229,6 @@
         transition: 0.25s ease-out;
     }
 
-    .title > .subtitle_2:hover input {
-    }
     .salle-containter {
         position: relative;
         width: 100%;
@@ -225,14 +256,10 @@
         color: var(--color-secondary-00);
         padding: 2.5px;
         text-align: center;
-
     }
-
     @media only screen and (min-width: 992px) {
         .salle-containter {
             width: 66%;
         }
     }
-
-
 </style>

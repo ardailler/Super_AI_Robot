@@ -1,13 +1,20 @@
 //app.js
 
-const createError = require('http-errors');
-const express = require('express');
-const path = require('path');
-const mongoose = require('mongoose');
-const cookieParser = require('cookie-parser');
-const logger = require('morgan');
+const createError = require('http-errors')
+const express = require('express')
+const path = require('path')
+const mongoose = require('mongoose')
+const cookieParser = require('cookie-parser')
+const logger = require('morgan')
 const cors = require('cors')
+/*const http = require('http')
+const WebSocket = require('ws')*/
 require('dotenv').config({path: __dirname + '/.env'})
+const app = express()
+const server = require('http').createServer(app);
+const io = require('socket.io')(server)
+
+const User = require('./models/User')
 
 
 /*const { spawn } = require('child_process')
@@ -18,24 +25,12 @@ pythonProcess.stdout.on('data', (data) => {
   console.log(json.test)
   // Do something with the data returned from python script
 })*/
-/////////////////////////////////
-/*const torch = require("@idn/torchjs");
-
-var test_model_path = "../../ai/dqn.pt";
-
-var script_module = new torch.ScriptModule(test_model_path);
-
-var a = torch.rand(1, 5); // Etat de l'environnement
-
-var c = script_module.forward(a); // C = Action à faire par le robot*/
-/////////////////////////////////////
 
 
 const config = require('./config/Config');
 
 const routes = require('./routes')
 
-const app = express();
 
 mongoose.connect(config.DB, {
   useCreateIndex: true,
@@ -44,7 +39,8 @@ mongoose.connect(config.DB, {
 });
 
 app.all("/api/*", function(req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Credentials', true)
   res.header('Access-Control-Expose-Headers', 'Authorization');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
@@ -78,7 +74,81 @@ app.use((err, req, res) => {
   res.render('error');
 });
 
-app.listen(config.APP_PORT); // Listen on port defined in environment
+
+// websockets
+io.on('connection', function(client) {
+  console.log('Client connected...')
+  client.emit('connected', 'Hello you are connected')
+  // new web client is connected
+  client.on('new-web-client', async function (_id) {
+    client.emit('connected', 'Hello you are connected')
+    const client_id = client.id
+    const user = await User.updateWebClient(_id, client_id, true)
+    io.to(user.webClient).emit('webClient')
+  })
+    // update connection
+    client.on('webIsAlive', async function (_id) {
+        const client_id = client.id
+        const user = await User.updateWebClient(_id, client_id, true)
+    })
+    // update actions
+    client.on('addActions', async function (_id, salle_id, actions) {
+        const user = await User.findById(_id)
+        const client_id = user.webClient
+        io.to(client_id).emit('newActionsAdded', {salle_id: salle_id, actions: actions})
+    })
 
 
-module.exports = app;
+
+  client.on('new-app-client', async function (_id) {
+    client.emit('connected', 'Hello you are connected'+_id)
+    /* const client_id = client.id
+    const user = await User.updateWebClient(_id, client_id, true)
+    io.to(user.webClient).emit('webClient') */
+  })
+
+})
+
+// check connection
+setInterval( async () => {
+  User.find({}, function (err, users) {
+    users.forEach(async (user) => {
+      try {
+        await checkWebConnection(user)
+      } catch (e) {
+        console.log(e)
+      }
+    })
+  })
+}, 10000);
+
+
+async function checkWebConnection (user)
+{
+  try {
+    if (user.webClient && user.webClient !== '') {
+      if (io.sockets.connected[user.webClient] && !user.webIsAlive) {
+        io.sockets.connected[user.webClient].emit('disconnected', 'Hello you are disconnected')
+        io.sockets.connected[user.webClient].disconnect()
+        await User.updateWebClient(user._id, '', false)
+      } else {
+        await User.updateWebClient(user._id, user.webClient, false)
+        io.to(user.webClient).emit('webRUAlive')
+      }
+    }
+  } catch (e) {
+    console.log(e)
+  }
+
+}
+
+
+// start server
+server.listen(config.APP_PORT, () => {
+  console.log(`Server started on port ${server.address().port} :)`);
+});
+
+// app.listen(config.APP_PORT); // Listen on port defined in environment
+
+
+module.exports = app

@@ -6,7 +6,7 @@ const router = express.Router()
 
 // get all salle items in the db
 router.get('/', auth, (req, res) => {
-    repository.findAll().then((salles) => {
+    repository.findQuery(req.user._id).then((salles) => {
         res.json(salles)
     }).catch((error) => console.log(error))
 })
@@ -14,7 +14,9 @@ router.get('/', auth, (req, res) => {
 // add a salle item
 router.post('/', auth, (req, res) => {
     const { name } = req.body
-    repository.create(name).then((salle) => {
+    console.log(name)
+    console.log(req.user._id)
+    repository.create(name, req.user._id).then((salle) => {
         res.json(salle)
     }).catch((error) => console.log(error))
 })
@@ -22,8 +24,7 @@ router.post('/', auth, (req, res) => {
 // delete a salle item
 router.delete('/:id', auth, (req, res) => {
     const { id } = req.params
-    repository.deleteById(id).then((ok) => {
-        console.log(ok)
+    repository.deleteById(id).then(() => {
         console.log(`Deleted record with id: ${id}`)
         res.status(200).json([])
     }).catch((error) => console.log(error))

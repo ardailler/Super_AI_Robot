@@ -17,6 +17,10 @@ const salleSchema = new Schema({
       required: true
     }
   }],
+  creator: {
+    type: String,
+    required: true
+  }
 }, {
   timestamps: true
 })

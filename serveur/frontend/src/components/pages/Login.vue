@@ -109,6 +109,7 @@
                         // handle redirection
                         // const redirectTo = redirect ? redirect.from.name : app.$auth.user().role === 2 ? 'admin.dashboard' : 'dashboard'
                         app.switchClose()
+                        app.$socket.emit('new-web-client', app.$auth.user()._id)
                         setTimeout(function () {
                             app.$router.push({name: 'dashboard'})
                         }, 1000)
@@ -236,6 +237,10 @@
     .sign-pages .center button {
         margin-top: 5px;
     }
+    .sign-pages .center .form-group input {
+        background-color: var(--color-light);
+    }
+
     .sign-pages .center .form-group .form-control {
         border: none;
         padding: 2px 0;
