@@ -22,13 +22,28 @@ const User = require('./models/User')
 // 1-4 orientation, 1-3 distance au mur
 const { spawn } = require('child_process')
 
-const pythonProcess = spawn('python',["./python/get_action.py", "1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2"])
+/*const pythonProcess = spawn('python',["./python/get_action.py", "1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2"])
+let response = null
 pythonProcess.stdout.on('data', (data) => {
   let json = JSON.parse(data.toString())
-  console.log(json)
-})
+   response = json
+})*/
+
+function run (cmd, arg, callback) {
+  var spawn = require('child_process').spawn;
+  var command = spawn(cmd, arg);
+  var result = '';
+  command.stdout.on('data', function(data) {
+    let json = JSON.parse(data.toString())
+    result = json
+  });
+  command.on('close', function(code) {
+    return callback(result);
+  });
+}
 
 
+console.log('response : ', response)
 const config = require('./config/Config');
 
 const routes = require('./routes')
@@ -151,9 +166,13 @@ io.on('connection', function(client) {
         sizeOfCase = distance / 5
         initOrientation = data.alpha
         init = true
-        for (let i = 0; i < 9; i++) {
-          const user = await User.addHistrorique(data._id, getOrientation(data.alpha), distance/sizeOfCase)
-          console.log(user.historique)
+        for (let i = 0; i < 8; i++) {
+          const user = await User.addHistorique(data._id, getOrientation(data.alpha), distance/sizeOfCase)
+          const histo = await User.getHistorique(data._id)
+          console.log(histo)
+          run("python",["./python/get_action.py", histo], function(result) {
+            console.log(result)
+          });
         }
       }
 
