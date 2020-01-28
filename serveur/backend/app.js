@@ -105,10 +105,23 @@ io.on('connection', function(client) {
 
   // application connected
   client.on('new-app-client', async function (_id) {
-      console.log('Hello you are connected '+_id)
-     const client_id = client.id
+    console.log('Hello you are connected '+_id)
+    const client_id = client.id
     const user = await User.updateAppClient(_id, client_id, true)
     io.to(user.webClient).emit('app_connected')
+
+  })
+
+
+
+  // application connected
+  client.on('kill-app-client', async function (_id) {
+    console.log('kill '+_id)
+    const client_id = client.id
+    const user = await User.updateAppClient(_id, '', false)
+    if (io.sockets.connected[user.webClient] && user.webIsAlive) {
+      io.sockets.connected[user.webClient].emit('app_disconnected')
+    }
 
   })
 

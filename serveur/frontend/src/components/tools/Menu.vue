@@ -64,6 +64,7 @@ export default {
       this.appConnected = true
     },
     app_disconnected () {
+      console.log('etetset')
       this.appConnected = false
     },
     appRUAlive () {

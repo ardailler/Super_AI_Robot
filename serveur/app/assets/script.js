@@ -30,14 +30,15 @@ new Vue({
         gamma: null,
         distance: null,
         mur: null,
-        socket: null
+        socket: null,
+        intervalle2: null
     },
     mounted () {
         let self = this
         // todo delete
         setTimeout(function () {
             self.isLoad = true
-        },500)
+        },250)
 
         window.onload = function(){
             // front.send('get-ip', app.getPath('userData'));
@@ -73,6 +74,12 @@ new Vue({
             clearInterval(self.intervalle)
             self.intervalle = null
         }
+        if (self.intervalle2 !== null) {
+            clearInterval(self.intervalle2)
+            self.intervalle2 = null
+        }
+        self.salleConnected = false
+        self.compteur = 3
     },
     watch: {
         salleConnected () {
@@ -152,7 +159,11 @@ new Vue({
         },
         startBoussole () {
             let self = this
-            setInterval(function () {
+            if (self.intervalle2) {
+                clearInterval(self.intervalle2)
+                self.intervalle2 = null
+            }
+            self.intervalle2 = setInterval(function () {
                 self.socket.emit('new-data-boussole', {_id: self.user._id, alpha: self.alpha});
             }, 25)
         },
@@ -206,6 +217,8 @@ new Vue({
                 dataType: 'json',
                 success: function (response) {
                     console.log(response)
+                    self.socket.emit('kill-app-client', self.user._id ); // todo id
+                    self.user._id = ''
                     self.user.email = ''
                     self.user.name = ''
                     self.user.token = ''
@@ -218,6 +231,12 @@ new Vue({
                     app.toast.show('Erreur lors de la deconnexion', 0);
                 }
             })
+            if (self.intervalle2) {
+                clearInterval(self.intervalle2)
+                self.intervalle2 = null
+            }
+            self.salleConnected = false
+            self.compteur = 3
         },
         createSalle () {
             let self = this
