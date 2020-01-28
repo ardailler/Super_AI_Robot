@@ -15,7 +15,14 @@ try {
     back.send('toast-msg', err)
 }
 
-// init();
+setTimeout(function () {
+    back.send('toast-msg', '-1s avant init')
+}, 4000)
+setTimeout(function () {
+    back.send('toast-msg', 'board : ' + board)
+    // init();
+    // back.send('toast-msg', 'init work')
+}, 5000)
 
 
 function play(){
@@ -23,36 +30,35 @@ function play(){
 }
 
 
+function init() {
+    back.send('toast-msg', 'board : ' + board)
+    board.on("ready", function () {
+        // Create two servos as our wheels
+        let wheels = {}
+        wheels.left = new five.Servo({
+            pin: 13,
+            type: "continuous"
+        });
+        wheels.right = new five.Servo({
+            pin: 12,
+            type: "continuous",
+            invert: true // one wheel mounted inverted of the other
+        });
+        wheels.both = new Servos([wheels.left, wheels.right]);
+        car = wheels
+        wheels.both.stop()
 
+        const proximity = new Proximity({
+            controller: "HCSR04",
+            pin: 7
+        });
 
-function init(){
-    board.on("ready", function() {
-    // Create two servos as our wheels
-    let wheels = {}
-    wheels.left = new five.Servo({
-        pin: 13,
-        type: "continuous"
-    });
-    wheels.right = new five.Servo({
-        pin: 12,
-        type: "continuous",
-        invert: true // one wheel mounted inverted of the other
-    });
-    wheels.both = new Servos([wheels.left, wheels.right]);
-    car = wheels
-    wheels.both.stop()
+        proximity.on("change", () => {
+            const {centimeters, inches} = proximity;
+            distancetowall = centimeters / 100;
+        });
 
-    const proximity = new Proximity({
-    controller: "HCSR04",
-    pin: 7
-    });
-
-    proximity.on("change", () => {
-    const {centimeters, inches} = proximity;
-    distancetowall = centimeters/100;
-    });
-
-    play()
+        play()
 
     });
 
