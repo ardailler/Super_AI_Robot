@@ -73,16 +73,10 @@ function getAvancement(){
     let tmp = lastprox
     lastprox = distancetowall
     if (tmp !== 0) {
-        return {
-            avancement: (tmp-distancetowall),
-            distance: distancetowall
-        }
+        return (tmp-distancetowall)
     }
     else {
-        return {
-            avancement: 0,
-            distance: distancetowall
-        }
+        return 0
     }
 
 }

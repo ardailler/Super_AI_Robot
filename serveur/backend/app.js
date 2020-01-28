@@ -144,7 +144,7 @@ io.on('connection', function(client) {
         avancement: avancement,
         distance: distance
       })
-      counter = 20
+      counter = 40
     } else {
       counter --
     }
