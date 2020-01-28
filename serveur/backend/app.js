@@ -42,8 +42,6 @@ function run (cmd, arg, callback) {
   });
 }
 
-
-console.log('response : ', response)
 const config = require('./config/Config');
 
 const routes = require('./routes')
