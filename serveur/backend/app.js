@@ -7,6 +7,9 @@ const mongoose = require('mongoose')
 const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 const cors = require('cors')
+
+const john = require('./johnny.js')
+john()
 /*const http = require('http')
 const WebSocket = require('ws')*/
 require('dotenv').config({path: __dirname + '/.env'})
@@ -73,6 +76,9 @@ app.use((err, req, res) => {
 });
 
 
+let alphaList = {}
+
+
 // websockets
 io.on('connection', function(client) {
   console.log('Client connected...')
@@ -97,12 +103,23 @@ io.on('connection', function(client) {
     })
 
 
-
+  // application connected
   client.on('new-app-client', async function (_id) {
-    client.emit('connected', 'Hello you are connected'+_id)
-    /* const client_id = client.id
-    const user = await User.updateWebClient(_id, client_id, true)
-    io.to(user.webClient).emit('webClient') */
+      console.log('Hello you are connected '+_id)
+     const client_id = client.id
+    const user = await User.updateAppClient(_id, client_id, true)
+    io.to(user.webClient).emit('app_connected')
+
+  })
+
+  // update connection
+  client.on('appIsAlive', async function (_id) {
+    const user = await User.findById(_id)
+    await User.updateAppClient(_id, user.appClient, true)
+  })
+
+  client.on('new-data-boussole', async function (data) {
+    alphaList[data._id] = data.alpha
   })
 
 })
@@ -113,6 +130,7 @@ setInterval( async () => {
     users.forEach(async (user) => {
       try {
         await checkWebConnection(user)
+        await checkAppConnection(user)
       } catch (e) {
         console.log(e)
       }
@@ -137,7 +155,24 @@ async function checkWebConnection (user)
   } catch (e) {
     console.log(e)
   }
+}
 
+async function checkAppConnection (user)
+{
+  try {
+    if (user.appClient && user.appClient !== '') {
+      if (io.sockets.connected[user.appClient] && !user.appIsAlive) {
+        io.sockets.connected[user.webClient].emit('app_disconnected', 'Hello you are disconnected')
+        io.sockets.connected[user.appClient].disconnect()
+        await User.updateWebClient(user._id, '', false)
+      } else {
+        await User.updateAppClient(user._id, user.appClient, false)
+        io.to(user.webClient).emit('appRUAlive')
+      }
+    }
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 

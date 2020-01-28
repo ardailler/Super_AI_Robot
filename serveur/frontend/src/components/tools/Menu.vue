@@ -5,6 +5,7 @@
       <p class="subtitle_1">{{ $auth.user().name }}</p>
     </div>
     <div class="icons">
+      <span :class="['socket', haveAppSocket]" :title="haveAppSocketText"></span>
       <span :class="['socket', haveSocket]" :title="haveSocketText"></span>
       <span v-if="_check" @click.prevent.stop="$auth.logout()" class="logout icon-ios-power" title="logout"></span>
     </div>
@@ -15,7 +16,8 @@ export default {
   name: "Menu",
   data() {
     return {
-      connected: false
+      connected: false,
+      appConnected: false
     }
   },
   mounted () {
@@ -27,8 +29,14 @@ export default {
     haveSocket () {
       return this.connected ? 'icon-ios-wifi': 'icon-ios-airplane'
     },
+    haveAppSocket () {
+      return this.appConnected ? 'icon-ios-phone-portrait': 'icon-ios-airplane'
+    },
     haveSocketText () {
       return this.connected ? 'connecté': 'non connecté'
+    },
+    haveAppSocketText () {
+      return this.appConnected ? 'connecté': 'non connecté'
     },
     _check() {
       return this.$auth.check()
@@ -49,7 +57,17 @@ export default {
       this.connected = false
     },
     webRUAlive () {
-        this.$socket.emit('webIsAlive', this.$auth.user()._id)
+      this.$socket.emit('webIsAlive', this.$auth.user()._id)
+    },
+
+    app_connected () {
+      this.appConnected = true
+    },
+    app_disconnected () {
+      this.appConnected = false
+    },
+    appRUAlive () {
+      this.$socket.emit('appIsAlive', this.$auth.user()._id)
     }
   },
   methods: {

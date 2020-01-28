@@ -2,7 +2,7 @@ new Vue({
     el: '#app',
     data: {
         isLoad: false,
-        ip: '192.168.178.73', //todo remove
+        ip: '192.168.43.76', //todo remove
         ipConnected: false, // todo false
         baseURL: '',
         connexion: {
@@ -11,6 +11,7 @@ new Vue({
             password: ''
         },
         user: {
+            _id: '',
             email: '',
             name: '', // todo remove ''
             token: ''
@@ -40,7 +41,7 @@ new Vue({
 
         window.onload = function(){
             front.send('get-ip', app.getPath('userData'));
-            front.send('get-user', app.getPath('userData'));
+            // front.send('get-user', app.getPath('userData'));
         }
 
         front.on('get-ip-result', function(msg){
@@ -51,7 +52,7 @@ new Vue({
         })
 
         front.on('get-user-result', function(msg){
-            if(msg !== "$$"){
+            if(msg !== "$$$"){
                 let data = msg.split('$');
                 self.user.email = data[0]
                 self.user.name = data[1]
@@ -99,6 +100,7 @@ new Vue({
                 if(window.DeviceOrientationEvent) {
                     window.addEventListener("deviceorientation", self.process, false);
                     app.toast.show('Orientation go !!', 0);
+                    self.startBoussole()
                 } else {
                     console.log('Device not support orientation')
                     app.toast.show('Device not support orientation', 0);
@@ -140,13 +142,19 @@ new Vue({
                     self.ipConnected = true
                     self.userConnected = true
                     self.baseURL = `http://${this.ip}/api`
-                    self.socket.emit('new-app-client', 'id' ); // todo id
+                    self.socket.emit('new-app-client', this.user._id ); // todo id
                     app.toast.show('Connexion reussite', 0);
                 },
                 error: function (response) {
                     app.toast.show('Erreur de connexion', 0);
                 }
             })
+        },
+        startBoussole () {
+            let self = this
+            setInterval(function () {
+                self.socket.emit('new-data-boussole', {_id: self.user._id, alpha: self.alpha});
+            }, 25)
         },
         login() {
             // get the redirect object
@@ -168,9 +176,10 @@ new Vue({
                         self.user.email = response.data.email
                         self.user.name = response.data.name
                         self.user.token = response.token
+                        self.user._id = response.data._id
                         self.userConnected = true
-                        let msg = self.user.email + "$" + self.user.name + "$" + self.user.token;
-                        self.socket.emit('new-app-client', 'id' ); // todo id
+                        let msg = self.user._id + "$" + self.user.email + "$" + self.user.name + "$" + self.user.token;
+                        self.socket.emit('new-app-client', self.user._id ); // todo id
                         front.send('save-user', app.getPath('userData'), msg)
                         app.toast.show('Connexion réussi', 0);
                     } else {

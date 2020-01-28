@@ -8,23 +8,25 @@ var car = null
 var distancetowall = 0
 var lastprox = 0
 
+/*
 try {
     back.send('toast-msg', 'load board')
-    board = new five.Board({port: "dev/ttys2"})
+    board = new five.Board()
     back.send('toast-msg', 'board load')
 } catch (err) {
     console.log('err : ', err)
     back.send('toast-msg', err)
 }
+*/
 
-setTimeout(function () {
+/*setTimeout(function () {
     back.send('toast-msg', '-1s avant init')
 }, 4000)
 setTimeout(function () {
     back.send('toast-msg', 'board : ' + board)
     // init();
     // back.send('toast-msg', 'init work')
-}, 5000)
+}, 5000)*/
 
 
 function play(){
@@ -138,7 +140,7 @@ back.on('save-user', function(filepath, msg){
 
 back.on('get-user', function(filepath){
     fs.readFile(path.join(filepath, 'user.txt'), 'utf-8', function(err, data) {
-        if(err) back.send('get-user-result', '$$')
+        if(err) back.send('get-user-result', '$$$')
         else back.send('get-user-result', data)
     })
 })

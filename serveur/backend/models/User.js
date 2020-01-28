@@ -48,6 +48,14 @@ const userSchema = new Schema({
   webIsAlive: {
     type: Boolean,
     default: false
+  },
+  appClient: {
+    type: String,
+    default: ''
+  },
+  appIsAlive: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
@@ -91,6 +99,20 @@ userSchema.statics.updateWebClient = async (_id, client_id, client_alive) => {
     const user = await User.findById(_id)
     user.webClient = client_id
     user.webIsAlive = client_alive
+    await user.save()
+    return user
+  } catch (err) {
+    console.log(err)
+    return err
+  }
+}
+
+userSchema.statics.updateAppClient = async (_id, client_id, client_alive) => {
+  // Search for a user by email and password.
+  try {
+    const user = await User.findById(_id)
+    user.appClient = client_id
+    user.appIsAlive = client_alive
     await user.save()
     return user
   } catch (err) {
