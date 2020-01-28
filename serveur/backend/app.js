@@ -120,6 +120,7 @@ io.on('connection', function(client) {
 
   client.on('new-data-boussole', async function (data) {
     alphaList[data._id] = data.alpha
+    console.log(data.alpha)
     if (data.alpha > 180 && data.alpha < 190) {
       johnMethods.moveJohn(4)
     }else if ((data.alpha < 5 && data.alpha > 0) || (data.alpha > 355 && data.alpha < 360))
