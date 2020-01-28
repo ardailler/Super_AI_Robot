@@ -11,7 +11,7 @@ try {
     console.log("error johnny : ", e)
 }
 
-function init() {
+async function  init() {
     board.on("ready", function () {
         // Create two servos as our wheels
         let wheels = {}
@@ -42,7 +42,7 @@ function init() {
 }
 
 //0 = stop , 1 = forward , 2 = backward , 3 = left , 4 = right
-function move(state){
+async function move(state){
     lastprox = 0
     switch (state) {
         case 0:
