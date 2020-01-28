@@ -5,9 +5,6 @@ var car = null
 var distancetowall = 0
 var lastprox = 0
 
-function play(){
-    move(4);
-}
 try {
     board = new five.Board()
 } catch (e) {
@@ -40,9 +37,6 @@ function init() {
             const {centimeters, inches} = proximity;
             distancetowall = centimeters / 100;
         });
-
-        play()
-
     });
 
 }
@@ -71,4 +65,7 @@ function move(state){
     }
 }
 
-module.exports = init;
+module.exports  = {
+    initJohn: init,
+    moveJohn: move
+}

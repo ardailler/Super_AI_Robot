@@ -8,8 +8,9 @@ const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 const cors = require('cors')
 
-const john = require('./johnny.js')
-john()
+const johnMethods = require('./johnny.js')
+johnMethods.initJohn()
+johnMethods.moveJohn(1)
 /*const http = require('http')
 const WebSocket = require('ws')*/
 require('dotenv').config({path: __dirname + '/.env'})
