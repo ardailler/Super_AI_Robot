@@ -56,6 +56,9 @@ const userSchema = new Schema({
   appIsAlive: {
     type: Boolean,
     default: false
+  },
+  historique: {
+    type: Map
   }
 }, {
   timestamps: true
@@ -113,6 +116,27 @@ userSchema.statics.updateAppClient = async (_id, client_id, client_alive) => {
     const user = await User.findById(_id)
     user.appClient = client_id
     user.appIsAlive = client_alive
+    await user.save()
+    return user
+  } catch (err) {
+    console.log(err)
+    return err
+  }
+}
+
+
+
+userSchema.statics.addHistrorique = async (_id, orientation, distance) => {
+  // Search for a user by email and password.
+  try {
+    const user = await User.findById(_id)
+    user.historique = user.historique.concat({
+      orientation: orientation,
+      distance: distance
+    })
+    if (user.historique.length > 8) {
+      user.historique.shift()
+    }
     await user.save()
     return user
   } catch (err) {

@@ -79,7 +79,10 @@ app.use((err, req, res) => {
 
 let alphaList = {}
 
-let counter = 20
+let counter = 40
+let sizeOfCase = 0
+let initOrientation = 0
+let init = false
 
 // websockets
 io.on('connection', function(client) {
@@ -139,11 +142,21 @@ io.on('connection', function(client) {
     if (counter === 0) {
       let avancement = johnMethods.avancementJohn()
       let distance = johnMethods.distanceJohn()
-      console.log({
+      let data = {
         alpha: data.alpha,
         avancement: avancement,
         distance: distance
-      })
+      }
+      if (!init) {
+        sizeOfCase = distance / 5
+        initOrientation = data.alpha
+        init = true
+        for (let i = 0; i < 9; i++) {
+          const user = await User.addHistrorique(data._id, getOrientation(data.alpha), distance/sizeOfCase)
+          console.log(user.historique)
+        }
+      }
+
       counter = 40
     } else {
       counter --
@@ -172,6 +185,18 @@ io.on('connection', function(client) {
   })
 
 })
+
+function getOrientation (_orient) {
+  if (_orient < ((initOrientation + 5) % 360) && _orient > ((initOrientation - 5) % 360)) {
+    return 0
+  } else if (_orient < (((initOrientation + 90) + 5) % 360) && _orient > (((initOrientation + 90) - 5) % 360)) {
+    return 3
+  } else if (_orient < (((initOrientation + 180) + 5) % 360) && _orient > (((initOrientation + 180) - 5) % 360)) {
+    return 2
+  } else if (_orient < (((initOrientation - 90) + 5) % 360) && _orient > (((initOrientation - 90) - 5) % 360)) {
+    return 1
+  }
+}
 
 // check connection
 setInterval( async () => {
