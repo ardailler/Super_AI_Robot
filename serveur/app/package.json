@@ -14,10 +14,15 @@
   "description": "",
   "main": "main.js",
   "dependencies": {
+    "@serialport/list": "^8.0.6",
     "androidjs": "^2.0.1",
     "johnny-five": "^1.4.0",
+    "serialport": "^8.0.6",
+    "sf": "^0.2.0",
     "socket.io-client": "^2.3.0",
-    "vue": "^2.6.11"
+    "usb-detection": "^4.7.0",
+    "vue": "^2.6.11",
+    "webusb": "^2.0.1"
   },
   "theme": {
     "fullScreen": true,

@@ -8,8 +8,28 @@ var car = null
 var distancetowall = 0
 var lastprox = 0
 
+var serialport = require('serialport');
+var sf = require('sf');
+
 try {
-    board = new five.Board()
+    serialport.list().then(responses => {
+        let listPort = ""
+        for (res of responses) {
+            listPort += " - " + res.path
+        }
+        console.log(listPort)
+        back.send('toast-msg', listPort)
+    })
+} catch (err) {
+    back.send('toast-msg', "erreeroeroer")
+}
+
+
+
+try {
+    back.send('toast-msg', 'load board')
+    board = new five.Board({port: "dev/ttys2"})
+    back.send('toast-msg', 'board load')
 } catch (err) {
     console.log('err : ', err)
     back.send('toast-msg', err)
