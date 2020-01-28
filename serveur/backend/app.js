@@ -10,9 +10,6 @@ const cors = require('cors')
 
 const johnMethods = require('./johnny.js')
 johnMethods.initJohn()
-setTimeout(function () {
-  johnMethods.moveJohn(1)
-}, 5000)
 /*const http = require('http')
 const WebSocket = require('ws')*/
 require('dotenv').config({path: __dirname + '/.env'})
@@ -123,6 +120,11 @@ io.on('connection', function(client) {
 
   client.on('new-data-boussole', async function (data) {
     alphaList[data._id] = data.alpha
+    if (data.alpha > 180 && data.alpha < 190) {
+      johnMethods.moveJohn(4)
+    }else if ((data.alpha < 5 && data.alpha > 0) || (data.alpha > 355 && data.alpha < 360))
+    johnMethods.moveJohn(3)
+
   })
 
 })

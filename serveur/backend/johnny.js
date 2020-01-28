@@ -42,7 +42,7 @@ function  init() {
 
 }
 
-//0 = stop , 1 = forward , 2 = backward , 3 = left , 4 = right
+//0 = stop , 2 = forward , 1 = backward , 3 = left , 4 = right
 function move(state){
     console.log("move car : ", car)
     lastprox = 0
