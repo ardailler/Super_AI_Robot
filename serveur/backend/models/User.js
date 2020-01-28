@@ -157,8 +157,8 @@ userSchema.statics.getHistorique = async (_id) => {
     const user = await User.findById(_id)
     let hist = ""
     let counter = 1
-    for (let hist of user.historique) {
-      hist += hist.orientation + "," + hist.distance
+    for (let histo of user.historique) {
+      hist += histo.orientation + "," + histo.distance
       if (counter < user.historique.length) {
         hist += ","
       }
