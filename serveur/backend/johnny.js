@@ -45,7 +45,6 @@ function  init() {
 //0 = stop , 2 = forward , 1 = backward , 3 = left , 4 = right
 function move(state){
     console.log("move car : ", car)
-    lastprox = 0
     switch (state) {
         case 0:
             car.both.stop();
@@ -66,8 +65,34 @@ function move(state){
             break;
     }
 }
+function resetDist () {
+    lastprox = 0
+}
+function getProximity(){
+    let tmp = lastprox
+    lastprox = distancetowall
+    if (tmp !== 0) {
+        return {
+            avancement: (tmp-distancetowall),
+            distance: distancetowall
+        }
+    }
+    else {
+        return {
+            avancement: 0,
+            distance: distancetowall
+        }
+    }
+
+}
+
+function getData () {
+
+}
 
 module.exports  = {
     initJohn: init,
-    moveJohn: move
+    moveJohn: move,
+    dataJohn: getProximity,
+    resetDistJohn: resetDist
 }

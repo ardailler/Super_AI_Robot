@@ -21,6 +21,7 @@ const User = require('./models/User')
 
 // 1-4 orientation, 1-3 distance au mur
 const { spawn } = require('child_process')
+
 const pythonProcess = spawn('python',["./python/get_action.py", "1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2"])
 pythonProcess.stdout.on('data', (data) => {
   let json = JSON.parse(data.toString())
@@ -133,11 +134,32 @@ io.on('connection', function(client) {
 
   client.on('new-data-boussole', async function (data) {
     alphaList[data._id] = data.alpha
-    console.log(data.alpha)
+
+    dataJ = johnMethods.dataJohn()
+    console.log({
+      alpha: data.alpha,
+      avancement: dataJ.avancement,
+      distance: dataJ.distance
+    })
+    /*init*/
+    // alpha + avancement + distance
+    // convertir
+    //remplir base
+    // ask python
+
+    // utilise reponse python
+    // verifier + - 5 alpha
+    // alpha + avancement + distance
+    // convertir
+    // si case different
+    // stop && ask python
+
+
+    /*console.log(data.alpha)
     if (data.alpha > 180 && data.alpha < 190) {
       johnMethods.moveJohn(4)
     }else if ((data.alpha < 5 && data.alpha > 0) || (data.alpha > 355 && data.alpha < 360))
-    johnMethods.moveJohn(3)
+    johnMethods.moveJohn(3)*/
 
   })
 
