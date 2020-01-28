@@ -142,7 +142,7 @@ io.on('connection', function(client) {
     if (counter === 0) {
       let avancement = johnMethods.avancementJohn()
       let distance = johnMethods.distanceJohn()
-      let data = {
+      let data2 = {
         alpha: data.alpha,
         avancement: avancement,
         distance: distance
