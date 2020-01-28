@@ -68,7 +68,8 @@ function move(state){
 function resetDist () {
     lastprox = 0
 }
-function getProximity(){
+
+function getAvancement(){
     let tmp = lastprox
     lastprox = distancetowall
     if (tmp !== 0) {
@@ -86,6 +87,10 @@ function getProximity(){
 
 }
 
+function getDistance(){
+    return distancetowall
+}
+
 function getData () {
 
 }
@@ -93,6 +98,7 @@ function getData () {
 module.exports  = {
     initJohn: init,
     moveJohn: move,
-    dataJohn: getProximity,
+    avancementJohn: getAvancement,
+    distanceJohn: getDistance,
     resetDistJohn: resetDist
 }

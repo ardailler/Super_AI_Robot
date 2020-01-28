@@ -79,6 +79,7 @@ app.use((err, req, res) => {
 
 let alphaList = {}
 
+let counter = 20
 
 // websockets
 io.on('connection', function(client) {
@@ -135,12 +136,19 @@ io.on('connection', function(client) {
   client.on('new-data-boussole', async function (data) {
     alphaList[data._id] = data.alpha
 
-    dataJ = johnMethods.dataJohn()
-    console.log({
-      alpha: data.alpha,
-      avancement: dataJ.avancement,
-      distance: dataJ.distance
-    })
+    if (counter === 0) {
+      let avancement = johnMethods.distanceJohn()
+      let distance = johnMethods.distanceJohn()
+      console.log({
+        alpha: data.alpha,
+        avancement: avancement,
+        distance: distance
+      })
+      counter = 20
+    } else {
+      counter --
+    }
+
     /*init*/
     // alpha + avancement + distance
     // convertir
