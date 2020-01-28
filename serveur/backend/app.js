@@ -166,12 +166,12 @@ io.on('connection', function(client) {
         init = true
         for (let i = 0; i < 8; i++) {
           const user = await User.addHistorique(data._id, getOrientation(data.alpha), distance/sizeOfCase)
-          const histo = await User.getHistorique(data._id)
-          console.log(histo)
-          run("python",["./python/get_action.py", histo], function(result) {
-            console.log(result)
-          });
         }
+        const histo = await User.getHistorique(data._id)
+        console.log(histo)
+        run("python",["./python/get_action.py", histo], function(result) {
+          console.log(result)
+        });
       }
 
       counter = 40
