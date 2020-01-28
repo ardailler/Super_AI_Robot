@@ -12,7 +12,7 @@ const johnMethods = require('./johnny.js')
 johnMethods.initJohn()
 setTimeout(function () {
   johnMethods.moveJohn(1)
-}, 250)
+}, 5000)
 /*const http = require('http')
 const WebSocket = require('ws')*/
 require('dotenv').config({path: __dirname + '/.env'})
