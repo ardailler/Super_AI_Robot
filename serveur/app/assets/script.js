@@ -2,7 +2,7 @@ new Vue({
     el: '#app',
     data: {
         isLoad: false,
-        ip: '192.168.43.76', //todo remove
+        ip: '192.168.', //todo remove
         ipConnected: false, // todo false
         baseURL: '',
         connexion: {
@@ -40,11 +40,11 @@ new Vue({
         },500)
 
         window.onload = function(){
-            front.send('get-ip', app.getPath('userData'));
+            // front.send('get-ip', app.getPath('userData'));
             // front.send('get-user', app.getPath('userData'));
         }
 
-        front.on('get-ip-result', function(msg){
+        /*front.on('get-ip-result', function(msg){
             if(msg !== ""){
                 self.ip = msg
             }
@@ -61,7 +61,7 @@ new Vue({
                 app.toast.show('after connexion', 1)
             }
             self.isLoad = true
-        })
+        })*/
 
         front.on('toast-msg', function(msg){
             app.toast.show(msg, 1)
@@ -123,7 +123,7 @@ new Vue({
             if (self.ip) {
                 self.ipConnected = true
                 self.baseURL = `http://${self.ip}/api`
-                front.send('save-ip', app.getPath('userData'), this.ip)
+                // front.send('save-ip', app.getPath('userData'), this.ip)
             } else {
                 app.toast.show('Adresse ip vide', 0);
             }
@@ -180,7 +180,7 @@ new Vue({
                         self.userConnected = true
                         let msg = self.user._id + "$" + self.user.email + "$" + self.user.name + "$" + self.user.token;
                         self.socket.emit('new-app-client', self.user._id ); // todo id
-                        front.send('save-user', app.getPath('userData'), msg)
+                        // front.send('save-user', app.getPath('userData'), msg)
                         app.toast.show('Connexion réussi', 0);
                     } else {
                         app.toast.show('Erreur de connexion', 0);
@@ -211,7 +211,7 @@ new Vue({
                     self.user.token = ''
                     self.userConnected = false
                     let msg = '' + "$" + '' + "$" + ''
-                    front.send('save-user', app.getPath('userData'), msg)
+                    // front.send('save-user', app.getPath('userData'), msg)
                     app.toast.show('Deconnexion réussi', 0);
                 },
                 error: function (response) {
