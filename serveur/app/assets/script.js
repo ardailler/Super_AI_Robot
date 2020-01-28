@@ -57,6 +57,7 @@ new Vue({
                 self.user.name = data[1]
                 self.user.token = data[2]
                 self.tryConnexion(self.user.token)
+                app.toast.show('after connexion', 1)
             }
             self.isLoad = true
         })

@@ -1,7 +1,6 @@
 const back = require('androidjs').back
 const fs = require('fs')
 const path = require('path')
-<<<<<<< HEAD
 var five = require("johnny-five")
 const {Board, Servo, Servos, Proximity} = require("johnny-five");
 var board = null
@@ -13,10 +12,10 @@ try {
     board = new five.Board()
 } catch (err) {
     console.log('err : ', err)
-    back.send('err', err)
+    back.send('toast-msg', err)
 }
 
-init();
+// init();
 
 
 function play(){
@@ -63,10 +62,12 @@ function init(){
 function getProximity(){
     tmp = lastprox
     lastprox = distancetowall
-    if tmp !=0 :
+    if (tmp != 0) {
         return [tmp-distancetowall , distancetowall]
-    else:
+    }
+    else {
         return [0,distancetowall]
+    }
 
 }
 
