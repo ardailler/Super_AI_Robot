@@ -153,8 +153,8 @@ io.on('connection', function(client) {
     alphaList[data._id] = data.alpha
 
     if (counter === 0) {
-      let avancement = johnMethods.avancementJohn()
-      let distance = johnMethods.distanceJohn()
+      let avancement = await johnMethods.avancementJohn()
+      let distance = await johnMethods.distanceJohn()
       let data2 = {
         alpha: data.alpha,
         avancement: avancement,
