@@ -278,6 +278,7 @@ async function goProcessus(orient, data) {
     await run("python", ["./python/get_action.py", histo], function (result) {
       nextAction = result.action
       useAction(nextAction, orient)
+      console.log(result)
       wait = false
     })
   } else if (actionEnCours === 1 && nextAction === 0) {
