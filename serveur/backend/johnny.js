@@ -26,7 +26,6 @@ function  init() {
         });
         wheels.both = new Servos([wheels.left, wheels.right]);
         car = wheels
-        console.log("init car : ", car)
         wheels.both.stop()
 
         const proximity = new Proximity({
@@ -44,7 +43,6 @@ function  init() {
 
 //0 = stop , 2 = forward , 1 = backward , 3 = left , 4 = right
 function move(state){
-    console.log("move car : ", car)
     switch (state) {
         case 0:
             car.both.stop();

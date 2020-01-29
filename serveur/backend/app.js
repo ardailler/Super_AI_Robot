@@ -342,16 +342,19 @@ function useAction(_action, _orient) {
       orientDebutAction = _orient
       johnMethods.moveJohn(3)
       actionEnCours = 1
+        console.log('1 _action : ', _action, ' actionEnCours : ', actionEnCours)
       break
     case 1:
       orientDebutAction = _orient
       johnMethods.moveJohn(4)
       actionEnCours = 2
+      console.log('2 _action : ', _action, ' actionEnCours : ', actionEnCours)
       break
     case 2:
       orientDebutAction = _orient
       johnMethods.moveJohn(2)
       actionEnCours = 3
+      console.log('3 _action : ', _action, ' actionEnCours : ', actionEnCours)
       break
   }
 }
