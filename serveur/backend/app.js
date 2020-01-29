@@ -283,7 +283,7 @@ async function goProcessus(orient, data) {
     })
   } else if (actionEnCours === 1 && nextAction === 0) {
     console.log('actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' orientDebutAction : ', orientDebutAction)
-    if (_orient < (((orientDebutAction + 90) + 5) % 360) && _orient > (((orientDebutAction + 90) - 5) % 360)) {
+    if (orient < (((orientDebutAction + 90) + 5) % 360) && orient > (((orientDebutAction + 90) - 5) % 360)) {
       johnMethods.moveJohn(0)
 
       let avancement = johnMethods.avancementJohn()
@@ -307,7 +307,7 @@ async function goProcessus(orient, data) {
     }
   } else if (actionEnCours === 1 && nextAction === 1) {
     console.log(' 2 actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' orientDebutAction : ', orientDebutAction)
-    if (_orient < (((orientDebutAction - 90) + 5) % 360) && _orient > (((orientDebutAction - 90) - 5) % 360)) {
+    if (orient < (((orientDebutAction - 90) + 5) % 360) && orient > (((orientDebutAction - 90) - 5) % 360)) {
       johnMethods.moveJohn(0)
 
       let avancement = johnMethods.avancementJohn()
