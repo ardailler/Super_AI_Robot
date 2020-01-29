@@ -96,7 +96,6 @@ let counter = 40
 let sizeOfCase = 0
 let initOrientation = 0
 let init = false
-let nextAction  = -10
 
 // websockets
 io.on('connection', function(client) {
@@ -168,16 +167,9 @@ io.on('connection', function(client) {
         for (let i = 0; i < 8; i++) {
           const user = await User.addHistorique(data._id, getOrientation(data.alpha), distance/sizeOfCase)
         }
-        const histo = await User.getHistorique(data._id)
-        console.log(histo)
-
-        await run("python",["./python/get_action.py", histo], function(result) {
-          nextAction = result.action
-        });
-        console.log('action : ', nextAction )
-      } else {
-
       }
+
+      goProcessus(data.alpha)
 
       counter = 40
     } else {
@@ -268,6 +260,93 @@ async function checkAppConnection (user)
     }
   } catch (e) {
     console.log(e)
+  }
+}
+
+let actionEnCours = 0
+let wait = false
+let orientDebutAction = 0
+
+let distanceDebutAction = 0
+
+async function goProcessus(orient) {
+  const histo = await User.getHistorique(data._id)
+  console.log(histo)
+  if (actionEnCours === 0 && ! wait) {
+    wait = true
+    await run("python", ["./python/get_action.py", histo], function (result) {
+      let nextAction = result.action
+      useAction(nextAction, orient)
+      wait = false
+    })
+  } else if (actionEnCours === 1 && nextAction === 0) {
+    if (_orient < (((orientDebutAction + 90) + 5) % 360) && _orient > (((orientDebutAction + 90) - 5) % 360)) {
+      johnMethods.moveJohn(0)
+
+      let avancement = johnMethods.avancementJohn()
+      let distance = johnMethods.distanceJohn()
+      distanceDebutAction = distance
+      let data2 = {
+        alpha: orient,
+        avancement: avancement,
+        distance: distance
+      }
+      nextAction = 2
+      useAction(nextAction, orient)
+    } else if (actionEnCours === 3 && nextAction === 2) {
+      let distance = johnMethods.distanceJohn()
+      if (distance < (distanceDebutAction - sizeOfCase)) {
+        johnMethods.moveJohn(0)
+        actionEnCours = 0
+        const user = await User.addHistorique(data._id, getOrientation(data.alpha), distance/sizeOfCase)
+      }
+    }
+  } else if (actionEnCours === 1 && nextAction === 1) {
+    if (_orient < (((orientDebutAction - 90) + 5) % 360) && _orient > (((orientDebutAction - 90) - 5) % 360)) {
+      johnMethods.moveJohn(0)
+
+      let avancement = johnMethods.avancementJohn()
+      let distance = johnMethods.distanceJohn()
+      distanceDebutAction = distance
+      let data2 = {
+        alpha: orient,
+        avancement: avancement,
+        distance: distance
+      }
+      nextAction = 2
+      useAction(nextAction, orient)
+    } else if (actionEnCours === 3 && nextAction === 2) {
+      let distance = johnMethods.distanceJohn()
+      if (distance < (distanceDebutAction - sizeOfCase)) {
+        johnMethods.moveJohn(0)
+        actionEnCours = 0
+        const user = await User.addHistorique(data._id, getOrientation(data.alpha), distance/sizeOfCase)
+      }
+    }
+  }
+
+}
+
+/*- Action 0 : gauche
+- Action 1 : droite
+- Action 2 : Avancer*/
+function useAction(_action, _orient) {
+  switch (_action) {
+    case 0:
+      orientDebutAction = _orient
+      johnMethods.moveJohn(3)
+      actionEnCours = 1
+      break
+    case 1:
+      orientDebutAction = _orient
+      johnMethods.moveJohn(4)
+      actionEnCours = 2
+      break
+    case 2:
+      orientDebutAction = _orient
+      johnMethods.moveJohn(2)
+      actionEnCours = 3
+      break
   }
 }
 
