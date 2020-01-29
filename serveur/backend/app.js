@@ -92,7 +92,7 @@ app.use((err, req, res) => {
 
 let alphaList = {}
 
-let counter = 10
+let counter = 5
 let sizeOfCase = 0
 let initOrientation = 0
 let init = false
@@ -168,34 +168,11 @@ io.on('connection', function(client) {
           const user = await User.addHistorique(data._id, getOrientation(data.alpha), distance/sizeOfCase)
         }
       }
-
       goProcessus(data.alpha, data)
-
-      counter = 10
+      counter = 5
     } else {
       counter --
     }
-
-    /*init*/
-    // alpha + avancement + distance
-    // convertir
-    //remplir base
-    // ask python
-
-    // utilise reponse python
-    // verifier + - 5 alpha
-    // alpha + avancement + distance
-    // convertir
-    // si case different
-    // stop && ask python
-
-
-    /*console.log(data.alpha)
-    if (data.alpha > 180 && data.alpha < 190) {
-      johnMethods.moveJohn(4)
-    }else if ((data.alpha < 5 && data.alpha > 0) || (data.alpha > 355 && data.alpha < 360))
-    johnMethods.moveJohn(3)*/
-
   })
 
 })
