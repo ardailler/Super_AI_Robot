@@ -92,7 +92,7 @@ app.use((err, req, res) => {
 
 let alphaList = {}
 
-let counter = 5
+let counter = 1
 let sizeOfCase = 0
 let initOrientation = 0
 let init = false
@@ -202,7 +202,7 @@ io.on('connection', function(client) {
       }
 
       goProcessus(data.alpha, data)
-      counter = 5
+      counter = 1
     } else {
       counter --
     }
