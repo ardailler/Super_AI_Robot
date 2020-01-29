@@ -96,7 +96,7 @@ let counter = 40
 let sizeOfCase = 0
 let initOrientation = 0
 let init = false
-let action = -10
+let nextAction  = -10
 
 // websockets
 io.on('connection', function(client) {
@@ -172,9 +172,9 @@ io.on('connection', function(client) {
         console.log(histo)
 
         await run("python",["./python/get_action.py", histo], function(result) {
-          action = result.action
+          nextAction = result.action
         });
-        console.log('action : ', action)
+        console.log('action : ', nextAction )
       } else {
 
       }
