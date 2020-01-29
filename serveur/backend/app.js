@@ -271,8 +271,9 @@ let distanceDebutAction = 0
 
 async function goProcessus(orient, data) {
   const histo = await User.getHistorique(data._id)
-  console.log(histo)
+  console.log('histo : ', histo)
   if (actionEnCours === 0 && ! wait) {
+    console.log('actionEnCours : ', actionEnCours, ' wait : ', wait)
     wait = true
     await run("python", ["./python/get_action.py", histo], function (result) {
       let nextAction = result.action
@@ -280,6 +281,7 @@ async function goProcessus(orient, data) {
       wait = false
     })
   } else if (actionEnCours === 1 && nextAction === 0) {
+    console.log('actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' orientDebutAction : ', orientDebutAction)
     if (_orient < (((orientDebutAction + 90) + 5) % 360) && _orient > (((orientDebutAction + 90) - 5) % 360)) {
       johnMethods.moveJohn(0)
 
@@ -294,6 +296,7 @@ async function goProcessus(orient, data) {
       nextAction = 2
       useAction(nextAction, orient)
     } else if (actionEnCours === 3 && nextAction === 2) {
+      console.log('actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' distanceDebutAction : ', distanceDebutAction)
       let distance = johnMethods.distanceJohn()
       if (distance < (distanceDebutAction - sizeOfCase)) {
         johnMethods.moveJohn(0)
@@ -302,6 +305,7 @@ async function goProcessus(orient, data) {
       }
     }
   } else if (actionEnCours === 1 && nextAction === 1) {
+    console.log(' 2 actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' orientDebutAction : ', orientDebutAction)
     if (_orient < (((orientDebutAction - 90) + 5) % 360) && _orient > (((orientDebutAction - 90) - 5) % 360)) {
       johnMethods.moveJohn(0)
 
@@ -316,6 +320,7 @@ async function goProcessus(orient, data) {
       nextAction = 2
       useAction(nextAction, orient)
     } else if (actionEnCours === 3 && nextAction === 2) {
+      console.log(' 2 actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' distanceDebutAction : ', distanceDebutAction)
       let distance = johnMethods.distanceJohn()
       if (distance < (distanceDebutAction - sizeOfCase)) {
         johnMethods.moveJohn(0)
