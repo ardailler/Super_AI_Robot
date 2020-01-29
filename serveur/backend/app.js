@@ -266,7 +266,7 @@ async function checkAppConnection (user)
 let actionEnCours = 0
 let wait = false
 let orientDebutAction = 0
-
+let nextAction = -10
 let distanceDebutAction = 0
 
 async function goProcessus(orient, data) {
@@ -276,7 +276,7 @@ async function goProcessus(orient, data) {
     console.log('actionEnCours : ', actionEnCours, ' wait : ', wait)
     wait = true
     await run("python", ["./python/get_action.py", histo], function (result) {
-      let nextAction = result.action
+      nextAction = result.action
       useAction(nextAction, orient)
       wait = false
     })
