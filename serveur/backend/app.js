@@ -287,6 +287,7 @@ async function goProcessus(orient, data) {
     console.log('(orient > (((orientDebutAction + 90) - 5) % 360) : ', (orient > (((orientDebutAction + 90) - 5) % 360))
     console.log('orient : ', orient)
     if (orient < (((orientDebutAction + 90) + 5) % 360) && orient > (((orientDebutAction + 90) - 5) % 360)) {
+      console.log("paadssdfsfdsfdsfsd")
       johnMethods.moveJohn(0)
 
       let avancement = johnMethods.avancementJohn()
