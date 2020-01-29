@@ -96,7 +96,8 @@ let counter = 5
 let sizeOfCase = 0
 let initOrientation = 0
 let init = false
-
+let lastDistance = 0
+let counter2 = 10
 // websockets
 io.on('connection', function(client) {
   console.log('Client connected...')
@@ -168,6 +169,38 @@ io.on('connection', function(client) {
           const user = await User.addHistorique(data._id, getOrientation(data.alpha), distance/sizeOfCase)
         }
       }
+
+      if (counter2 === 0 ){
+        let avancement2 = await johnMethods.avancementJohn()
+        let distance2 = await johnMethods.distanceJohn()
+        let data2 = [
+          {
+            "action": {
+              "type": "rotation",
+              "value": data.alpha
+            }
+          },
+          {
+            "action": {
+              "type": "translation",
+              "value": avancement2
+            }
+          },
+          {
+            "action": {
+              "type": "mur",
+              "value": distance2
+            }
+          }
+        ]
+        const user = User.findById(data._id)
+        io.to(user.webClient).emit('newActionsAdded', data2)
+
+        counter2 = 10
+      } else {
+        counter2 --
+      }
+
       goProcessus(data.alpha, data)
       counter = 5
     } else {
