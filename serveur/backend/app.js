@@ -96,6 +96,7 @@ let counter = 40
 let sizeOfCase = 0
 let initOrientation = 0
 let init = false
+let action = -10
 
 // websockets
 io.on('connection', function(client) {
@@ -169,9 +170,13 @@ io.on('connection', function(client) {
         }
         const histo = await User.getHistorique(data._id)
         console.log(histo)
-        run("python",["./python/get_action.py", histo], function(result) {
-          console.log(result)
+
+        await run("python",["./python/get_action.py", histo], function(result) {
+          action = result.action
         });
+        console.log('action : ', action)
+      } else {
+
       }
 
       counter = 40
