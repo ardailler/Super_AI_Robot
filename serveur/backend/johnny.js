@@ -54,12 +54,12 @@ function move(state){
             car.both.ccw()
             break;
         case 3:
-            car.right.cw();
-            car.left.ccw();
+            car.right.cw(0.5);
+            car.left.ccw(0.5);
             break;
         case 4:
-            car.right.ccw();
-            car.left.cw();
+            car.right.ccw(0.5);
+            car.left.cw(0.5);
             break;
     }
 }
