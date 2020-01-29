@@ -311,7 +311,7 @@ async function goProcessus(orient, data) {
       nextAction = 2
       useAction(nextAction, orient)
     } else if (actionEnCours === 3 && nextAction === 2) {
-      console.log('actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' distanceDebutAction : ', distanceDebutAction)
+      console.log('actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' distanceDebutAction : ', distanceDebutAction, ' sizeOfCase : ', sizeOfCase , ' distance : ', distance)
       let distance = johnMethods.distanceJohn()
       if (distance < (distanceDebutAction - sizeOfCase)) {
         johnMethods.moveJohn(0)
