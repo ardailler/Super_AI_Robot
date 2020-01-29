@@ -283,6 +283,9 @@ async function goProcessus(orient, data) {
     })
   } else if (actionEnCours === 1 && nextAction === 0) {
     console.log('actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' orientDebutAction : ', orientDebutAction)
+    console.log('(orient < (((orientDebutAction + 90) + 5) % 360) : ', (orient < (((orientDebutAction + 90) + 5) % 360))
+    console.log('(orient > (((orientDebutAction + 90) - 5) % 360) : ', (orient > (((orientDebutAction + 90) - 5) % 360))
+    console.log('orient : ', orient)
     if (orient < (((orientDebutAction + 90) + 5) % 360) && orient > (((orientDebutAction + 90) - 5) % 360)) {
       johnMethods.moveJohn(0)
 
