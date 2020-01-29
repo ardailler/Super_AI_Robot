@@ -169,7 +169,7 @@ io.on('connection', function(client) {
         }
       }
 
-      goProcessus(data.alpha)
+      goProcessus(data.alpha, data)
 
       counter = 40
     } else {
@@ -269,7 +269,7 @@ let orientDebutAction = 0
 
 let distanceDebutAction = 0
 
-async function goProcessus(orient) {
+async function goProcessus(orient, data) {
   const histo = await User.getHistorique(data._id)
   console.log(histo)
   if (actionEnCours === 0 && ! wait) {
