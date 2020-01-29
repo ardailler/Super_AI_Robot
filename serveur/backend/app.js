@@ -281,7 +281,7 @@ let distanceDebutAction = 0
 
 async function goProcessus(orient, data) {
   const histo = await User.getHistorique(data._id)
-  console.log('histo : ', histo)
+  console.log('histo : ', histo, ' actionEnCours : ', actionEnCours, ' nextAction : ', nextAction)
   if (actionEnCours === 0 && ! wait) {
     console.log('actionEnCours : ', actionEnCours, ' wait : ', wait)
     wait = true
