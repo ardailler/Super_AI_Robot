@@ -282,68 +282,71 @@ let distanceDebutAction = 0
 async function goProcessus(orient, data) {
   const histo = await User.getHistorique(data._id)
   console.log('histo : ', histo, ' actionEnCours : ', actionEnCours, ' nextAction : ', nextAction)
-  if (actionEnCours === 0 && ! wait) {
-    console.log('actionEnCours : ', actionEnCours, ' wait : ', wait)
-    wait = true
-    await run("python", ["./python/get_action.py", histo], function (result) {
-      nextAction = result.action
-      useAction(nextAction, orient)
-      console.log(result)
-      wait = false
-    })
-  } else if (actionEnCours === 1 && nextAction === 0) {
-    console.log('actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' orientDebutAction : ', orientDebutAction)
-    console.log('(orient < (((orientDebutAction + 90) + 5) % 360) : ', (orient < (((orientDebutAction + 90) + 5) % 360)))
-    console.log('(orient > (((orientDebutAction + 90) - 5) % 360) : ', (orient > (((orientDebutAction + 90) - 5) % 360)))
-    console.log('orient : ', orient)
-    if (orient < (((orientDebutAction + 90) + 5) % 360) && orient > (((orientDebutAction + 90) - 5) % 360)) {
-      console.log("paadssdfsfdsfdsfsd")
-      johnMethods.moveJohn(0)
-
-      let avancement = johnMethods.avancementJohn()
-      let distance = johnMethods.distanceJohn()
-      distanceDebutAction = distance
-      let data2 = {
-        alpha: orient,
-        avancement: avancement,
-        distance: distance
-      }
-      nextAction = 2
-      useAction(nextAction, orient)
-    } else if (actionEnCours === 3 && nextAction === 2) {
-      console.log('actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' distanceDebutAction : ', distanceDebutAction, ' sizeOfCase : ', sizeOfCase , ' distance : ', distance)
-      let distance = johnMethods.distanceJohn()
-      if (distance < (distanceDebutAction - sizeOfCase)) {
+  if (nextAction !== -10) {
+    if (actionEnCours === 0 && ! wait) {
+      console.log('actionEnCours : ', actionEnCours, ' wait : ', wait)
+      wait = true
+      await run("python", ["./python/get_action.py", histo], function (result) {
+        nextAction = result.action
+        useAction(nextAction, orient)
+        console.log(result)
+        wait = false
+      })
+    } else if (actionEnCours === 1 && nextAction === 0) {
+      console.log('actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' orientDebutAction : ', orientDebutAction)
+      console.log('(orient < (((orientDebutAction + 90) + 5) % 360) : ', (orient < (((orientDebutAction + 90) + 5) % 360)))
+      console.log('(orient > (((orientDebutAction + 90) - 5) % 360) : ', (orient > (((orientDebutAction + 90) - 5) % 360)))
+      console.log('orient : ', orient)
+      if (orient < (((orientDebutAction + 90) + 5) % 360) && orient > (((orientDebutAction + 90) - 5) % 360)) {
+        console.log("paadssdfsfdsfdsfsd")
         johnMethods.moveJohn(0)
-        actionEnCours = 0
-        const user = await User.addHistorique(data._id, getOrientation(data.alpha), distance/sizeOfCase)
-      }
-    }
-  } else if (actionEnCours === 1 && nextAction === 1) {
-    console.log(' 2 actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' orientDebutAction : ', orientDebutAction)
-    if (orient < (((orientDebutAction - 90) + 5) % 360) && orient > (((orientDebutAction - 90) - 5) % 360)) {
-      johnMethods.moveJohn(0)
 
-      let avancement = johnMethods.avancementJohn()
-      let distance = johnMethods.distanceJohn()
-      distanceDebutAction = distance
-      let data2 = {
-        alpha: orient,
-        avancement: avancement,
-        distance: distance
+        let avancement = johnMethods.avancementJohn()
+        let distance = johnMethods.distanceJohn()
+        distanceDebutAction = distance
+        let data2 = {
+          alpha: orient,
+          avancement: avancement,
+          distance: distance
+        }
+        nextAction = 2
+        useAction(nextAction, orient)
+      } else if (actionEnCours === 3 && nextAction === 2) {
+        console.log('actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' distanceDebutAction : ', distanceDebutAction, ' sizeOfCase : ', sizeOfCase , ' distance : ', distance)
+        let distance = johnMethods.distanceJohn()
+        if (distance < (distanceDebutAction - sizeOfCase)) {
+          johnMethods.moveJohn(0)
+          actionEnCours = 0
+          const user = await User.addHistorique(data._id, getOrientation(data.alpha), distance/sizeOfCase)
+        }
       }
-      nextAction = 2
-      useAction(nextAction, orient)
-    } else if (actionEnCours === 3 && nextAction === 2) {
-      console.log(' 2 actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' distanceDebutAction : ', distanceDebutAction)
-      let distance = johnMethods.distanceJohn()
-      if (distance < (distanceDebutAction - sizeOfCase)) {
+    } else if (actionEnCours === 1 && nextAction === 1) {
+      console.log(' 2 actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' orientDebutAction : ', orientDebutAction)
+      if (orient < (((orientDebutAction - 90) + 5) % 360) && orient > (((orientDebutAction - 90) - 5) % 360)) {
         johnMethods.moveJohn(0)
-        actionEnCours = 0
-        const user = await User.addHistorique(data._id, getOrientation(data.alpha), distance/sizeOfCase)
+
+        let avancement = johnMethods.avancementJohn()
+        let distance = johnMethods.distanceJohn()
+        distanceDebutAction = distance
+        let data2 = {
+          alpha: orient,
+          avancement: avancement,
+          distance: distance
+        }
+        nextAction = 2
+        useAction(nextAction, orient)
+      } else if (actionEnCours === 3 && nextAction === 2) {
+        console.log(' 2 actionEnCours : ', actionEnCours, ' nextAction : ', nextAction, ' distanceDebutAction : ', distanceDebutAction)
+        let distance = johnMethods.distanceJohn()
+        if (distance < (distanceDebutAction - sizeOfCase)) {
+          johnMethods.moveJohn(0)
+          actionEnCours = 0
+          const user = await User.addHistorique(data._id, getOrientation(data.alpha), distance/sizeOfCase)
+        }
       }
     }
   }
+
 
 }
 
