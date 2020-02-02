@@ -25,7 +25,18 @@ Une fois les composants connectés les fonctionnalités suivant sont disponibles
   
 ## Intelligence Artificelle
 
-Pour les déplacements du robots nous avons utilisés un algorithme de DQN qui retourne une action en fonction d'un état. Plus de précision dans le dossier [AI](https://github.com/ardailler/Super_AI_Robot/tree/master/ai).
+Pour les déplacements du robots nous avons utilisés un algorithme de Deep Q-Learning qui retourne une action en fonction d'un état. 
+L'état ici est formalisé avec deux informations :
+- La distance du mur face au robot
+- Sa position cardinale
+
+Pour améliorer le repérage spaciale du robot, l'état est un liste des 8 derniers états visités.
+
+Durant l'apprentissage d'une pièce, on utilise le principe des phéromones pour aider le robot à explorer l'ensemble de l'espace. Ainsi, nous augmentons son reward sur des endroits où il n'est jamais allé, et le reward devient nul si la case a déjà été visité un certain nombre de fois.
+
+L'implémentation de l'algorithme a été fait en Python avec le framework PyTorch. Pour simuler l'environnement durant l'apprentissage, nous avons utilisé Gym Minigrid.
+
+Une fois l'entraînement terminé, on obtient un modèle entraîné sous la forme dans un fichier *.pt*. Pour exécuter le modèle, un script Python est appelé à partir de javascript par le serveur qui utilise le modèle.
 
 <p align="center">
     <img width="260px" src="https://upload.wikimedia.org/wikipedia/commons/9/96/Pytorch_logo.png">
