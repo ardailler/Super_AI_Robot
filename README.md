@@ -50,6 +50,77 @@ L'application web regroupe les informations de l'arduino et de l'IA  pour le con
       <td align="center" valign="middle">
           <img width="150px" src="https://i.cloudup.com/zfY6lL7eFa-3000x3000.png">
       </td>
+      <td align="center" valign="middle">
+          <img width="150px" src="https://www.grafikart.fr/uploads/icons/socket-io.svg">
+      </td>
+      <td align="center" valign="middle">
+          <img width="150px" src="https://android-js.github.io/img/icon.png">
+      </td>
     </tr><tr></tr>
   </tbody>
 </table>
+
+L'application web est séparé en 3 partie distincts afin de faire fonctionner le robot, le backend, le frontend et l'application android.
+Les 3 parties ont été développées en javascript.
+
+### Frontend
+_chemin : serveur/frontend_
+_installation : npm install_
+_exécution : npm run serve_
+Le frontend qui est un panneau administrateur à été développé à l'aide de _Vue.js_ il permet de s'authentifier afin d'avoir accès à la visualisation des salles scannées par le robot été authentifier avec le même compte.
+
+### Backend
+_chemin : serveur/backend_
+_installation : npm install_
+_exécution : npm start_
+Le backend qui est un serveur web javascript à été développé à l'aide d'_express.js_, il est au centre du fonctionnement de notre application. Le serveur communique en direct avec l'application Android et le panneau d'administration à l'aide de _sockets-io.js_, il récupères les actions du robot grâce à l'IA et gère les déplacements du robot à l'aide de _johnny-five.js_.
+**Routes** :
+Routes concernant l'authentification.
+`Post : /auth/register`
+_Paramètres : name, email, password_
+Création d'un nouvelle utilisateur qui pourra à la fois utiliser l'application Android et le panneau d'administration.
+`Post : /auth/login`
+_Paramètres : email, password_
+Authentification à un compte.
+`Get : /auth/user`
+_Authorization : token_
+Récupération des information de l'utilisateur connecté.
+`Post : /auth/logout`
+_Authorization : token_
+Déconnexion du token passé dans le _Header_.
+`Post : /auth/logoutall`
+_Authorization : token_
+Déconnexion de tout les tokens, et donc de tout les appareils.
+
+Routes concernant les salles.
+`Get : /salles/`
+_Authorization : token_
+Retourne toutes les salles de l'utilisateur connecté.
+`Post : /salles/`
+_Authorization : token_
+_Paramètres : name_
+Créé une nouvelle salle.
+`Delete : /salles/:id`
+_Authorization : token_
+Supprime la salle sélectionné.
+`Get : /salles/:id`
+_Authorization : token_
+Retourne les informations de la salle sélectionné.
+`Put : /salles/:id`
+_Authorization : token_
+_Paramètres : name, data_
+Met à jour les informations de la salle sélectionné.
+`Post : /salles/:id`
+_Authorization : token_
+_Paramètres : data_
+Ajoute une action dans la liste des actions du robots (actions que le robot à effectuer dans cette salle).
+
+### Application
+_chemin : serveur/app_
+_installation :_ 
+ - _npm install_
+ - _npm i -g androidjs-builder_
+
+_exécution : installer le .apk situé dans serveur/app/dist_
+_compilation : androidjs b_
+L'application Android est essentiel au fonctionnement du robot puisqu'elle permet de récupérer l'orientation (entre 0 et 360) du robot grâce à l'accéléromètre d'un smartphone Android, cette orientation est envoyé toutes les 30 millisecondes au serveur. Cette application est développé grâce _androidjs.js_ et _Vue.js_.
